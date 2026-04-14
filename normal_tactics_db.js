@@ -460,7 +460,7 @@ window.NORMAL_TACTICS = [
         difficulty: 3.1,
         theme: 'Decoy',
         fen: '2r4k/3r1p1p/1p2pP2/p2pPp1P/P2P1Q2/6R1/4B1PK/2q5 w - - 0 1',
-        solution: ['Rg8+','Kxg8','Qg3+','Kf8','Qg7+','Ke8','Qg8#']
+        solution: ['Rg8+','Kxg8','Qg3+','Kf8','Qg7+','Ke8','Qg8#'],
         alternatives:{6:'Qh8#'} 
     },
     {
