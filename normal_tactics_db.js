@@ -470,4 +470,5 @@ window.NORMAL_TACTICS = [
         fen: '2q5/pR6/1p3pnk/1P4pp/8/5QPP/P2r2BK/8 w - - 0 1',
         solution: ['Qxh5+','Kxh5','Rh7#'] 
     },
+    
 ];
