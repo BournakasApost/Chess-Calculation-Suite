@@ -152,66 +152,44 @@
         };
 
  
-        // NEW: Added themeFilter parameter
-        const useAdaptiveEngine = (database, startLevel, themeFilter = 'Mix') => {
-            const [currentLevel, setCurrentLevel] = React.useState(startLevel);
-            const [seenIds, setSeenIds] = React.useState(new Set()); 
+const useAdaptiveEngine = (database, initialRating, themeFilter = 'Mix') => {
+    const [currentRating, setCurrentRating] = React.useState(initialRating);
+    const [solvedIds, setSolvedIds] = React.useState(new Set());
 
-            const getNextPuzzle = React.useCallback((targetLvl) => {
-                // 1. Filter by Theme
-                let pool = database || [];
-                if (themeFilter && themeFilter !== 'Mix') {
-                    pool = pool.filter(p => p.theme === themeFilter);
-                }
+    const getNextPuzzle = React.useCallback((targetRating) => {
+        let available = database.filter(p => !solvedIds.has(p.id));
+        
+        if (themeFilter !== 'Mix') {
+            available = available.filter(p => p.theme === themeFilter);
+        }
 
-                if (!pool || pool.length === 0) return null; 
+        // Tier 1 Search: The "Safe Zone" (+/- 150 Elo)
+        let candidates = available.filter(p => Math.abs(p.rating - targetRating) <= 150);
 
-                // 2. Filter out puzzles they've already seen
-                let unseenPool = pool.filter(p => !seenIds.has(p.id));
+        // Tier 2 Search: Expanded Window (+/- 300 Elo) if running out of puzzles
+        if (candidates.length === 0) {
+            candidates = available.filter(p => Math.abs(p.rating - targetRating) <= 300);
+        }
 
-                // If they've seen everything in this theme, wipe memory and start over
-                if (unseenPool.length === 0) {
-                    setSeenIds(new Set());
-                    unseenPool = pool;
-                }
+        // Tier 3 Search: Desperation Mode (Anything left in the DB)
+        if (candidates.length === 0) {
+            candidates = available;
+        }
 
-                let selectedPuzzle = null;
+        if (candidates.length === 0) return null;
 
-                // --- 3. THE 3-TIER SELECTION LOGIC ---
+        const selected = candidates[Math.floor(Math.random() * candidates.length)];
+        setSolvedIds(prev => new Set(prev).add(selected.id));
+        return selected;
+    }, [database, solvedIds, themeFilter]);
 
-                // Tier 1: Look for anything within +/- 1.0 of their current level
-                const tier1 = unseenPool.filter(p => Math.abs(p.difficulty - targetLvl) <= 1.0);
-                
-                // Tier 2: Look for anything within +/- 2.0 of their current level
-                const tier2 = unseenPool.filter(p => Math.abs(p.difficulty - targetLvl) <= 2.0);
+    const updateRating = (change) => {
+        // Floor the rating at 600 so kids don't drop into negative Elo!
+        setCurrentRating(prev => Math.max(600, prev + change));
+    };
 
-                if (tier1.length > 0) {
-                    // Pick a completely random puzzle from the +/- 1.0 pool
-                    selectedPuzzle = tier1[Math.floor(Math.random() * tier1.length)];
-                } else if (tier2.length > 0) {
-                    // Expand search: Pick a random puzzle from the +/- 2.0 pool
-                    selectedPuzzle = tier2[Math.floor(Math.random() * tier2.length)];
-                } else {
-                    // Ultimate Fallback: Just give them a random unseen puzzle
-                    selectedPuzzle = unseenPool[Math.floor(Math.random() * unseenPool.length)];
-                }
-
-                // 4. Record this puzzle in the memory bank
-                setSeenIds(prev => {
-                    const newSet = new Set(prev);
-                    newSet.add(selectedPuzzle.id);
-                    return newSet;
-                });
-
-                return selectedPuzzle;
-            }, [database, themeFilter, seenIds]);
-
-            const updateLevel = (change) => {
-                setCurrentLevel(prev => Math.max(1, Math.min(10, prev + change)));
-            };
-
-            return { currentLevel, getNextPuzzle, updateLevel };
-        };
+    return { currentRating, getNextPuzzle, updateRating };
+};
         // --- UI COMPONENTS ---
         const Scoresheet = ({ moves, activeIndex = -1, darkTheme = false }) => {
             const rows = [];
@@ -276,52 +254,49 @@
                     );
                 }
             }
-
             return (
-                <div className="w-full max-w-md mx-auto border-4 border-slate-800 rounded-sm overflow-hidden shadow-2xl bg-white">
+                <div className="w-full border-4 border-slate-800 rounded-sm overflow-hidden shadow-2xl bg-white">
                     <div className="grid grid-cols-8 grid-rows-8 w-full h-full">
                         {squares}
                     </div>
                 </div>
             );
         };
-        const TierSelector = ({ onSelect, onBack }) => {
+const TierSelector = ({ onSelect, onBack }) => {
     return (
         <div className="flex flex-col items-center w-full max-w-lg mt-8 space-y-6 animate-fade-in">
-            {/* Header */}
             <div className="text-center mb-4">
-                <h2 className="text-3xl font-black text-slate-100 drop-shadow-md">Select Starting Tier</h2>
-                <p className="text-slate-400 font-medium mt-2">The Adaptive Engine will adjust difficulty based on your performance.</p>
+                <h2 className="text-3xl font-black text-slate-100 drop-shadow-md">Select Rating Class</h2>
+                <p className="text-slate-400 font-medium mt-2">The Engine will adapt the difficulty to your strength.</p>
             </div>
             
             {/* Novice Tier */}
-            <button onClick={() => onSelect(1.0)} className="w-full text-left p-6 bg-slate-800 rounded-xl shadow-lg border border-slate-700 hover:border-green-500 hover:bg-slate-800/80 transition-all duration-200 group">
+            <button onClick={() => onSelect(800)} className="w-full text-left p-6 bg-slate-800 rounded-xl shadow-lg border border-slate-700 hover:border-green-500 hover:bg-slate-800/80 transition-all duration-200 group">
                 <div className="flex justify-between items-center">
-                    <h3 className="text-xl font-bold text-green-400 transition-colors">Novice Tier</h3>
-                    <span className="bg-green-900/40 border border-green-800/50 text-green-300 text-xs font-bold px-3 py-1 rounded">Start: Level 1.0</span>
+                    <h3 className="text-xl font-bold text-green-400 transition-colors">U1000 Class</h3>
+                    <span className="bg-green-900/40 border border-green-800/50 text-green-300 text-xs font-bold px-3 py-1 rounded">Start: 800 Elo</span>
                 </div>
                 <p className="text-slate-400 mt-2">Building foundational visualization. Focus on 1-move calculations.</p>
             </button>
 
             {/* Club Tier */}
-            <button onClick={() => onSelect(4.0)} className="w-full text-left p-6 bg-slate-800 rounded-xl shadow-lg border border-slate-700 hover:border-blue-500 hover:bg-slate-800/80 transition-all duration-200 group">
+            <button onClick={() => onSelect(1300)} className="w-full text-left p-6 bg-slate-800 rounded-xl shadow-lg border border-slate-700 hover:border-blue-500 hover:bg-slate-800/80 transition-all duration-200 group">
                 <div className="flex justify-between items-center">
-                    <h3 className="text-xl font-bold text-blue-400 transition-colors">Club Tier</h3>
-                    <span className="bg-blue-900/40 border border-blue-800/50 text-blue-400 text-xs font-bold px-3 py-1 rounded">Start: Level 4.0</span>
+                    <h3 className="text-xl font-bold text-blue-400 transition-colors">U1600 Class</h3>
+                    <span className="bg-blue-900/40 border border-blue-800/50 text-blue-400 text-xs font-bold px-3 py-1 rounded">Start: 1300 Elo</span>
                 </div>
                 <p className="text-slate-400 mt-2">Testing your sight. Deep tactical lines and first-contact trades.</p>
             </button>
 
             {/* Master Tier */}
-            <button onClick={() => onSelect(7.0)} className="w-full text-left p-6 bg-slate-800 rounded-xl shadow-lg border border-slate-700 hover:border-purple-500 hover:bg-slate-800/80 transition-all duration-200 group">
+            <button onClick={() => onSelect(1800)} className="w-full text-left p-6 bg-slate-800 rounded-xl shadow-lg border border-slate-700 hover:border-purple-500 hover:bg-slate-800/80 transition-all duration-200 group">
                 <div className="flex justify-between items-center">
-                    <h3 className="text-xl font-bold text-purple-400 transition-colors">Master Tier</h3>
-                    <span className="bg-purple-900/40 border border-purple-800/50 text-purple-300 text-xs font-bold px-3 py-1 rounded">Start: Level 7.0</span>
+                    <h3 className="text-xl font-bold text-purple-400 transition-colors">Open Class</h3>
+                    <span className="bg-purple-900/40 border border-purple-800/50 text-purple-300 text-xs font-bold px-3 py-1 rounded">Start: 1800 Elo</span>
                 </div>
                 <p className="text-slate-400 mt-2">Elite calculation. Complex interference, quiet moves, and deep variations.</p>
             </button>
 
-            {/* Back Button */}
             <button onClick={onBack} className="mt-8 text-sm text-slate-500 font-bold hover:text-slate-300 transition-colors uppercase tracking-widest">
                 Back to Menu
             </button>
@@ -336,8 +311,8 @@
         };
 
 
-        const NormalTacticDrill = ({ onExit, startLevel, themeFilter }) => {
-            const { currentLevel, getNextPuzzle, updateLevel } = useAdaptiveEngine(typeof NORMAL_TACTICS !== 'undefined' ? NORMAL_TACTICS : [], startLevel, themeFilter);
+        const NormalTacticDrill = ({ onExit, initialRating, themeFilter }) => {
+            const { currentRating, getNextPuzzle, updateRating } = useAdaptiveEngine(typeof NORMAL_TACTICS !== 'undefined' ? NORMAL_TACTICS : [], initialRating, themeFilter);
             
             const [puzzle, setPuzzle] = React.useState(null);
             const [game, setGame] = React.useState(null);
@@ -374,8 +349,8 @@
             }, [getNextPuzzle]);
 
             React.useEffect(() => {
-                if (!puzzle) loadNewPuzzle(currentLevel);
-            }, [puzzle, loadNewPuzzle, currentLevel]);
+                if (!puzzle) loadNewPuzzle(currentRating);
+            }, [puzzle, loadNewPuzzle, currentRating]);
 
             const triggerShake = () => {
                 setShakeError(false);
@@ -441,11 +416,11 @@
 
                     } else {
                         if (attemptState === 'playing') {
-                            setFeedback("Perfect! Tactical sequence complete. (+0.4)");
-                            updateLevel(0.4);
+                            setFeedback("Perfect! Tactical sequence complete. (+20)");
+                            updateRating(20);
                         } else {
-                            setFeedback("Correct! Good recovery. (-0.4)");
-                            updateLevel(-0.4);
+                            setFeedback("Correct! Good recovery. (-15)");
+                            updateRating(-5);
                         }
                         setAttemptState('revealed');
                     }
@@ -459,8 +434,8 @@
                         setFeedback(`Incorrect move (${result.san}). Look deeper! (Strike 1)`);
                         setAttemptState('strike1');
                     } else {
-                        setFeedback(`Incorrect. Main line was: ${solutionArray.join(', ')}. (-1.0)`);
-                        updateLevel(-1.0);
+                        setFeedback(`Incorrect. Main line was: ${solutionArray.join(', ')}. (-10)`);
+                        updateRating(-10);
                         setAttemptState('revealed');
                         game.move(expectedMove);
                         setCurrentFen(game.fen());
@@ -486,8 +461,8 @@
                 <div className="flex flex-col items-center w-full">
                     {/* Top Bar: Adaptive Stats */}
                     <div className="flex justify-between w-full max-w-md px-2 mb-4 items-center">
-                        <div className="font-bold text-slate-700">Adaptive Rank: <span className="text-blue-600">Level {currentLevel.toFixed(1)}</span></div>
-                        <div className="text-xs font-bold bg-slate-200 text-slate-700 px-3 py-1 rounded">Diff: {puzzle.difficulty}/10</div>
+                        <div className="font-bold text-slate-700"> <span className="text-blue-600">Rating: {Math.round(currentRating)}</span></div>
+                        <div className="text-xs font-bold bg-slate-200 text-slate-700 px-3 py-1 rounded">Puzzle Rating: {puzzle.rating}</div>
                     </div>
 
                     {/* NEW: Turn Indicator & Hint System */}
@@ -512,8 +487,7 @@
                     <div className={`text-sm md:text-lg font-bold min-h-[1.5rem] mb-6 text-center transition-colors ${feedbackColorClass}`}>
                         {feedback}
                     </div>
-
-                    <div className={`w-full max-w-md ${shakeError ? 'shake' : ''}`}>
+                    <div className={`w-full max-w-lg ${shakeError ? 'shake' : ''}`}>
                         <Chessboard 
                             pieces={getPiecesFromFEN(currentFen)} 
                             markers={markers}
@@ -525,7 +499,7 @@
                     {attemptState === 'revealed' && (
                         <div className="flex space-x-4 w-full max-w-md mt-6">
                             <button type="button" onClick={() => openLichess(puzzle.fen)} className="flex-1 bg-slate-800 text-white font-bold py-4 rounded-xl hover:bg-slate-700 transition shadow-md">🔍 Analyze</button>
-                            <button type="button" onClick={() => loadNewPuzzle(currentLevel)} className="flex-1 bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition shadow-md">Next Puzzle ➡️</button>
+                            <button type="button" onClick={() => loadNewPuzzle(currentRating)} className="flex-1 bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition shadow-md">Next Puzzle ➡️</button>
                         </div>
                     )}
 
@@ -535,9 +509,9 @@
         };
     const SurvivalTacticDrill = ({ onExit, themeFilter }) => {
     // Survival always starts at Level 1.0
-    const { currentLevel, getNextPuzzle, updateLevel } = useAdaptiveEngine(
+    const { currentRating, getNextPuzzle, updateRating } = useAdaptiveEngine(
         typeof NORMAL_TACTICS !== 'undefined' ? NORMAL_TACTICS : [], 
-        1.0, 
+        800, 
         themeFilter
     );
     
@@ -574,7 +548,7 @@
         }
     }, [getNextPuzzle]);
 
-    React.useEffect(() => { if (!puzzle && !gameOver) loadNewPuzzle(currentLevel); }, [puzzle, loadNewPuzzle, gameOver]);
+    React.useEffect(() => { if (!puzzle && !gameOver) loadNewPuzzle(currentRating); }, [puzzle, loadNewPuzzle, gameOver]);
 
     // NEW: Reset functionality for Game Over
     const handleRestart = () => {
@@ -582,8 +556,8 @@
         setStreak(0);
         setGameOver(false);
         // We need to fetch a Level 1 puzzle manually to bypass the currentLevel state lag
-        updateLevel(-currentLevel + 1); // Force back to 1.0
-        loadNewPuzzle(1.0); 
+        updateRating(-currentRating + 800); // Force back to 1.0
+        loadNewPuzzle(800); 
     };
 
     const handleSquareClick = (col, row) => {
@@ -631,21 +605,21 @@
             } else {
                 // SURVIVAL WIN LOGIC: +0.8 Level, +1 Streak
                 const newStreak = streak + 1;
-                let winMessage = `Boom! (+0.8)`;
+                let winMessage = `Boom! (+35)`;
                 
                 if (newStreak >= 5 && lives < MAX_LIVES) {
                     setLives(l => l + 1);
                     setStreak(0);
-                    winMessage = `LIFE STEAL! 💖 (+0.8)`;
+                    winMessage = `LIFE STEAL! 💖 (+35)`;
                 } else if (newStreak >= 5 && lives === MAX_LIVES) {
                     setStreak(0); // Reset streak even if full, keeps them grinding
-                    winMessage = `MAX LIVES! 🔥 (+0.8)`;
+                    winMessage = `MAX LIVES! 🔥 (+35)`;
                 } else {
                     setStreak(newStreak);
                 }
 
                 setFeedback(winMessage);
-                updateLevel(0.8);
+                updateRating(35);
                 setAttemptState('revealed');
             }
         } else if (stepAlternatives.includes(result.san)) {
@@ -659,7 +633,7 @@
             const newLives = lives - 1;
             setLives(newLives);
             setStreak(0);
-            updateLevel(-1.0);
+            updateRating(-50);
             setAttemptState('revealed');
             
             game.move(expectedMove);
@@ -676,81 +650,123 @@
 
     if (!puzzle) return <div className="mt-20 text-slate-400 font-bold">Loading Database...</div>;
 
-    return (
-        <div className="flex flex-col items-center w-full max-w-lg animate-fade-in">
-            {/* SURVIVAL HUD */}
-            <div className="flex justify-between w-full px-2 mb-4 text-sm font-black text-slate-700 items-center">
-                <div className="flex flex-col">
-                    <span className="text-blue-600">Level {currentLevel.toFixed(1)}</span>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-widest">Diff: {puzzle.difficulty}</span>
+return (
+        <div className="flex flex-col items-center w-full max-w-6xl animate-fade-in px-4 pt-4">
+            
+            {/* MAIN LAYOUT WRAPPER */}
+            <div className="w-full flex flex-col md:flex-row justify-center items-center md:items-start gap-8 md:gap-16">
+                
+                {/* ========================================== */}
+                {/* LEFT COLUMN: HUD, Turn, Board, and Buttons */}
+                {/* ========================================== */}
+                <div className="w-full max-w-lg flex flex-col">
+                    
+                    {/* ROW 1: THE RATING HUD */}
+                    <div className="flex justify-between w-full px-2 mb-4 text-sm font-black text-slate-700 items-center">
+                        <div className="flex flex-col">
+                            <span className="text-blue-600">Rating: {Math.round(currentRating)}</span>
+                            <span className="text-[10px] text-slate-400 uppercase tracking-widest">Puzzle Rating: {puzzle.rating}</span>
+                        </div>
+                    </div>
+
+                    {/* ROW 2: Turn & Hint Row */}
+                    <div className="flex justify-between w-full px-2 mb-6 items-center">
+                        <div className={`px-3 py-1.5 rounded-lg font-black text-[10px] uppercase border-2 shadow-sm ${game?.turn() === 'w' ? 'bg-white text-slate-800 border-slate-200' : 'bg-slate-800 text-white border-slate-700'}`}>
+                            {game?.turn() === 'w' ? '⬜ White' : '⬛ Black'}
+                        </div>
+                        {!hintRevealed ? (
+                            <button onClick={() => setHintRevealed(true)} className="text-[10px] font-black bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg hover:bg-purple-200 transition uppercase tracking-tighter">💡 Hint</button>
+                        ) : (
+                            <div className="text-[10px] font-black text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100 uppercase animate-fade-in">Theme: {puzzle.theme}</div>
+                        )}
+                    </div>
+
+                    {/* ROW 3: Feedback */}
+                    <div className={`text-sm font-bold mb-4 h-6 text-center ${feedback.includes('Incorrect') || feedback.includes('Ouch') || feedback.includes('FATAL') ? 'text-red-500' : feedback.includes('Boom') || feedback.includes('STEAL') ? 'text-green-600' : 'text-slate-600'}`}>
+                        {feedback}
+                    </div>
+
+                    {/* ROW 4: The Board */}
+                    <div className={`w-full ${shakeError ? 'shake' : ''} ${gameOver ? 'grayscale opacity-70 transition-all duration-1000' : ''}`}> 
+                       <Chessboard 
+                            pieces={getPiecesFromFEN(currentFen)} 
+                            markers={selectedSquare ? [{ pos: [selectedSquare.charCodeAt(0)-97, parseInt(selectedSquare[1])-1], color: 'bg-yellow-400', opacity: 'opacity-40' }] : []}
+                            onSquareClick={handleSquareClick}
+                            renderMode="normal" 
+                        />
+                    </div>
+
+                    {/* ROW 5: Post-Puzzle Menus (Anchored under the board) */}
+                    {gameOver && (
+                        <div className="w-full mt-6 p-6 bg-red-50 border-2 border-red-200 rounded-xl text-center shadow-lg animate-fade-in">
+                            <h3 className="text-red-600 font-black text-xl mb-2">RUN TERMINATED</h3>
+                            <p className="text-slate-700 font-bold mb-6">You survived up to <span className="text-blue-600">Rating: {Math.round(currentRating)}</span></p>
+                            
+                            <div className="flex gap-2 w-full">
+                                <button onClick={onExit} className="flex-1 py-3 bg-slate-200 text-slate-600 font-bold rounded-xl text-sm hover:bg-slate-300 transition-colors">Main Menu</button>
+                                <button onClick={handleRestart} className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl text-sm shadow-md hover:bg-red-700 transition-colors">Try Again 🔄</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {attemptState === 'revealed' && !gameOver && (
+                        <div className="flex gap-2 mt-6 w-full">
+                            <button onClick={() => window.open(`https://lichess.org/analysis/${puzzle.fen}`, '_blank')} className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm hover:bg-slate-200 transition-colors">Analyze</button>
+                            <button onClick={() => loadNewPuzzle(currentRating)} className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 transition-colors">Next Puzzle</button>
+                        </div>
+                    )}
+                </div>
+
+                {/* ========================================== */}
+                {/* RIGHT COLUMN: Arcade-Style Lives & Streak  */}
+                {/* ========================================== */}
+                <div className="flex flex-col items-center mt-8 md:mt-16">
+                    
+                    {/* The Status Box (Reduced padding and added a fixed width) */}
+                    <div className={`flex flex-col items-center px-8 py-6 w-56 rounded-3xl border-4 shadow-xl transition-all duration-500 ${gameOver ? 'bg-slate-50 border-slate-300 opacity-50' : 'bg-white border-slate-200'}`}>
+                        
+                        <span className="text-slate-400 font-bold mb-3 tracking-[0.2em] uppercase text-[10px]">
+                            Integrity
+                        </span>
+                        
+                        {/* Smaller Hearts (Changed from 5xl down to 3xl) */}
+                        <div className="flex gap-2 text-3xl mb-6">
+                            {Array.from({ length: MAX_LIVES }).map((_, i) => (
+                                <span key={i} className={`transition-all duration-300 ${i < lives ? 'transform hover:scale-110' : 'opacity-30 grayscale'}`}>
+                                    {i < lives ? '❤️' : '🖤'}
+                                </span>
+                            ))}
+                        </div>
+
+                        {/* Visual Divider */}
+                        <div className="w-full h-px bg-slate-200 mb-5"></div>
+                        
+                        <span className="text-slate-400 font-bold mb-2 tracking-[0.2em] uppercase text-[10px]">
+                            Current Streak
+                        </span>
+                        
+                        {/* Smaller Streak Text (Changed down to 3xl) */}
+                        <div className={`text-3xl font-black ${streak >= 3 ? 'text-orange-500 animate-pulse' : 'text-slate-600'}`}>
+                            🔥 {streak}/5
+                        </div>
+                    </div>
+                    
+                    {!gameOver && (
+                        <button onClick={onExit} className="mt-10 text-slate-400 hover:text-slate-600 font-black text-[10px] uppercase tracking-widest transition-colors">
+                            Retreat to Menu
+                        </button>
+                    )}
                 </div>
                 
-                <div className="flex flex-col items-end">
-                    <div className="flex gap-1 text-lg">
-                        {Array.from({ length: MAX_LIVES }).map((_, i) => (
-                            <span key={i}>{i < lives ? '❤️' : '🖤'}</span>
-                        ))}
-                    </div>
-                    <span className="text-orange-500 text-xs mt-1">🔥 STREAK: {streak}/5</span>
-                </div>
             </div>
-
-            {/* Turn & Hint Row */}
-            <div className="flex justify-between w-full px-2 mb-6 items-center">
-                <div className={`px-3 py-1.5 rounded-lg font-black text-[10px] uppercase border-2 shadow-sm ${game?.turn() === 'w' ? 'bg-white text-slate-800 border-slate-200' : 'bg-slate-800 text-white border-slate-700'}`}>
-                    {game?.turn() === 'w' ? '⬜ White' : '⬛ Black'}
-                </div>
-                {!hintRevealed ? (
-                    <button onClick={() => setHintRevealed(true)} className="text-[10px] font-black bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg hover:bg-purple-200 transition uppercase tracking-tighter">💡 Hint</button>
-                ) : (
-                    <div className="text-[10px] font-black text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100 uppercase animate-fade-in">Theme: {puzzle.theme}</div>
-                )}
-            </div>
-
-            <div className={`text-sm font-bold mb-4 h-6 text-center ${feedback.includes('Incorrect') || feedback.includes('Ouch') || feedback.includes('FATAL') ? 'text-red-500' : feedback.includes('Boom') || feedback.includes('STEAL') ? 'text-green-600' : 'text-slate-600'}`}>
-                {feedback}
-            </div>
-
-            <div className={`${shakeError ? 'shake' : ''} ${gameOver ? 'grayscale opacity-70 transition-all duration-1000' : ''}`}>
-                <Chessboard 
-                    pieces={getPiecesFromFEN(currentFen)} 
-                    markers={selectedSquare ? [{ pos: [selectedSquare.charCodeAt(0)-97, parseInt(selectedSquare[1])-1], color: 'bg-yellow-400', opacity: 'opacity-40' }] : []}
-                    onSquareClick={handleSquareClick}
-                    renderMode="normal" 
-                />
-            </div>
-
-            {/* GAME OVER SCREEN OVERLAY */}
-            {gameOver && (
-                <div className="w-full mt-6 p-6 bg-red-50 border-2 border-red-200 rounded-xl text-center shadow-lg animate-fade-in">
-                    <h3 className="text-red-600 font-black text-xl mb-2">RUN TERMINATED</h3>
-                    <p className="text-slate-700 font-bold mb-6">You survived up to <span className="text-blue-600">Level {currentLevel.toFixed(1)}</span></p>
-                    
-                    <div className="flex gap-2 w-full">
-                        <button onClick={onExit} className="flex-1 py-3 bg-slate-200 text-slate-600 font-bold rounded-xl text-sm">Main Menu</button>
-                        <button onClick={handleRestart} className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl text-sm shadow-md">Try Again 🔄</button>
-                    </div>
-                </div>
-            )}
-
-            {attemptState === 'revealed' && !gameOver && (
-                <div className="flex gap-2 mt-6 w-full">
-                    <button onClick={() => window.open(`https://lichess.org/analysis/${puzzle.fen}`, '_blank')} className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm">Analyze</button>
-                    <button onClick={() => loadNewPuzzle(currentLevel)} className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl text-sm shadow-lg shadow-blue-200">Next Puzzle</button>
-                </div>
-            )}
-            
-            {!gameOver && (
-                <button onClick={onExit} className="mt-8 text-xs text-slate-400 font-bold hover:text-slate-600 uppercase tracking-widest">Retreat to Menu</button>
-            )}
         </div>
     );
 };
 const ClassicalGauntletDrill = ({ onExit, themeFilter }) => {
     // Gauntlet always starts at Level 1.0
-    const { currentLevel, getNextPuzzle, updateLevel } = useAdaptiveEngine(
+    const { currentRating, getNextPuzzle, updateRating } = useAdaptiveEngine(
         typeof NORMAL_TACTICS !== 'undefined' ? NORMAL_TACTICS : [], 
-        1.0, 
+        1000, 
         themeFilter
     );
     
@@ -796,7 +812,8 @@ const ClassicalGauntletDrill = ({ onExit, themeFilter }) => {
             setCurrentFen(newGame.fen());
             
             // Formula: 5 + (1 * Difficulty) in minutes -> to seconds
-            const initialSeconds = Math.floor((5 + nextPuzz.difficulty) * 60);
+            const equivalentLevel = (nextPuzz.rating - 600) / 150;
+            const initialSeconds = Math.floor((5 + equivalentLevel) * 60);
             setTimeLeft(initialSeconds);
             setClockPhase('think');
             setIsClockRunning(true);
@@ -812,12 +829,12 @@ const ClassicalGauntletDrill = ({ onExit, themeFilter }) => {
         }
     }, [getNextPuzzle]);
 
-    React.useEffect(() => { if (!puzzle && !gameOver) loadNewPuzzle(currentLevel); }, [puzzle, loadNewPuzzle, gameOver]);
+    React.useEffect(() => { if (!puzzle && !gameOver) loadNewPuzzle(currentRating); }, [puzzle, loadNewPuzzle, gameOver]);
 
     const handleRestart = () => {
         setGameOver(false);
-        updateLevel(-10); // Force Adaptive Engine back down to the 1.0 floor
-        loadNewPuzzle(1.0); 
+        updateRating(-2500); // Force Adaptive Engine back down to the 1.0 floor
+        loadNewPuzzle(1000); 
     };
 
     const handleFailure = (reason) => {
@@ -825,7 +842,7 @@ const ClassicalGauntletDrill = ({ onExit, themeFilter }) => {
         setShakeError(false); setTimeout(() => setShakeError(true), 10);
         setSelectedSquare(null);
         
-        updateLevel(-10); // The Brutal Reset to 1.0
+        updateRating(-2500); // The Brutal Reset to 1.0
         setAttemptState('revealed');
         setGameOver(true);
         
@@ -834,7 +851,7 @@ const ClassicalGauntletDrill = ({ onExit, themeFilter }) => {
             const expectedMove = solutionArray[stepIndex];
             if (expectedMove) game.move(expectedMove);
             setCurrentFen(game.fen());
-            setFeedback(`${reason} Resetting to Level 1.0.`);
+            setFeedback(`${reason} Resetting.`);
         }
     };
 
@@ -894,8 +911,8 @@ const ClassicalGauntletDrill = ({ onExit, themeFilter }) => {
             } else {
                 // Puzzle Complete
                 setIsClockRunning(false);
-                setFeedback("Flawless execution. (+0.2)");
-                updateLevel(0.2);
+                setFeedback("Flawless execution. (+50)");
+                updateRating(50);
                 setAttemptState('revealed');
             }
         } else if (stepAlternatives.includes(result.san)) {
@@ -915,86 +932,77 @@ const ClassicalGauntletDrill = ({ onExit, themeFilter }) => {
     const textColor = gameOver ? "text-slate-800" : "text-slate-300";
     const clockColor = clockPhase === 'think' ? "text-blue-400 border-blue-900/50 bg-blue-950/30" : "text-red-500 border-red-900/50 bg-red-950/30 animate-pulse";
 
-    return (
-        <div className={`flex flex-col items-center w-full min-h-screen p-4 transition-colors duration-1000 ${uiWrapper}`}>
-            <div className="w-full max-w-lg animate-fade-in flex flex-col items-center mt-4">
+return (
+    <div className="flex flex-col items-center w-full max-w-6xl animate-fade-in px-4 pt-4">
+        
+        {/* MAIN LAYOUT WRAPPER (Left Column: Info+Board | Right Column: Clock) */}
+        <div className="w-full flex flex-col md:flex-row justify-center items-center md:items-start gap-8 md:gap-16">
+            
+            {/* ========================================== */}
+            {/* LEFT COLUMN: HUD, Turn Indicator, and Board */}
+            {/* ========================================== */}
+            <div className="w-full max-w-lg flex flex-col">
                 
-                {/* THE CLOCK DISPLAY */}
-                <div className={`text-5xl font-black mb-6 px-8 py-4 rounded-2xl border shadow-inner tracking-tighter transition-all duration-500 ${gameOver ? 'text-slate-400 border-slate-200 bg-white' : clockColor}`}>
-                    {formatTime(timeLeft)}
+                {/* ROW 1: THE HUD */}
+                <div className="flex justify-between w-full px-2 mb-4 text-sm font-black text-slate-400 items-center">
+                    <div className="flex flex-col">
+                        <span className="text-blue-400">RATING: {Math.round(currentRating)}</span>
+                        <span className="text-[10px] uppercase tracking-widest">PUZZLE RATING: {puzzle.rating}</span>
+                    </div>
+                    <div className="text-center font-bold text-slate-200">
+                        Deep thought required. Board is live.
+                    </div>
                 </div>
 
-                {/* Header Stats */}
-                <div className={`flex justify-between w-full px-2 mb-4 text-xs font-bold uppercase tracking-widest ${textColor}`}>
-                    <span>Rank: <span className={gameOver ? "text-red-600" : "text-blue-400"}>Lvl {currentLevel.toFixed(1)}</span></span>
-                    <span className="opacity-50">Diff: {puzzle.difficulty}</span>
-                </div>
-
-                <div className={`text-sm font-bold mb-4 h-6 text-center ${feedback.includes('Fatal') || feedback.includes('EXPIRED') ? 'text-red-500' : feedback.includes('Flawless') ? 'text-green-500' : textColor}`}>
-                    {feedback}
-                </div>
-                {/* TURN & COMPOSITION ROW */}
-                <div className="flex justify-between items-center w-full mb-4 px-2 h-8">
-                    {/* Turn Indicator */}
-                    <div className={`px-3 py-1 rounded-md font-black text-[10px] uppercase border shadow-sm transition-colors duration-1000 ${
-                        gameOver ? 'bg-slate-200 text-slate-500 border-slate-300' :
-                        game?.turn() === 'w' ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-slate-800 text-slate-100 border-slate-600'
-                    }`}>
+                {/* ROW 2: TURN INDICATOR */}
+                <div className="w-full flex justify-start mb-6">
+                    <div className={`px-3 py-1.5 rounded-lg font-black text-[10px] uppercase border-2 shadow-sm ${game?.turn() === 'w' ? 'bg-white text-slate-800 border-slate-200' : 'bg-slate-800 text-white border-slate-700'}`}>
                         {game?.turn() === 'w' ? '⬜ White to Move' : '⬛ Black to Move'}
                     </div>
-
-                    {/* Conditional Theme Reveal (ONLY shows if it's exactly 'Composition: Mate in 2') */}
-                    {puzzle?.theme === 'Composition: Mate in 2' && (
-                        <div className={`text-[10px] font-black px-3 py-1 rounded-md border uppercase animate-fade-in ${
-                            gameOver ? 'bg-slate-200 text-slate-500 border-slate-300' : 'text-purple-300 bg-purple-900/30 border-purple-800/50'
-                        }`}>
-                            Target: Mate in 2
-                        </div>
-                    )}
                 </div>
-                {/* THE BOARD */}
-                <div className={`${shakeError ? 'shake' : ''} ${gameOver ? 'grayscale opacity-70 transition-all duration-1000' : 'shadow-2xl shadow-blue-900/20'}`}>
+
+                {/* ROW 3: THE BOARD */}
+                <div className={`w-full ${shakeError ? 'shake' : ''}`}>
                     <Chessboard 
                         pieces={getPiecesFromFEN(currentFen)} 
-                        markers={selectedSquare ? [{ pos: [selectedSquare.charCodeAt(0)-97, parseInt(selectedSquare[1])-1], color: 'bg-yellow-400', opacity: 'opacity-40' }] : []}
                         onSquareClick={handleSquareClick}
                         renderMode="normal" 
                     />
                 </div>
-
-                {/* GAME OVER SCREEN OVERLAY */}
-                {gameOver && (
-                    <div className="w-full mt-6 p-6 bg-white border-2 border-slate-200 rounded-xl text-center shadow-lg animate-fade-in">
-                        <h3 className="text-red-600 font-black text-xl mb-2">GAUNTLET FAILED</h3>
-                        <p className="text-slate-500 text-sm font-bold mb-6">Precision compromised. You have been returned to Level 1.0.</p>
-                        
-                        <div className="flex gap-2 w-full">
-                            <button onClick={onExit} className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm">Surrender</button>
-                            <button onClick={handleRestart} className="flex-1 py-3 bg-slate-800 text-white font-bold rounded-xl text-sm shadow-md">Restart Gauntlet</button>
-                        </div>
-                    </div>
-                )}
-
-                {/* SUCCESS REVEAL */}
-                {attemptState === 'revealed' && !gameOver && (
-                    <div className="flex gap-2 mt-6 w-full">
-                        <button onClick={() => window.open(`https://lichess.org/analysis/${puzzle.fen}`, '_blank')} className="flex-1 py-3 bg-slate-800/50 text-slate-300 font-bold rounded-xl text-sm border border-slate-700 hover:bg-slate-700 transition">Analyze</button>
-                        <button onClick={() => loadNewPuzzle(currentLevel)} className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl text-sm shadow-lg shadow-blue-900/50 hover:bg-blue-500 transition">Next Sequence</button>
-                    </div>
-                )}
-                
-                {!gameOver && (
-                    <button onClick={onExit} className={`mt-8 text-xs font-bold uppercase tracking-widest transition opacity-50 hover:opacity-100 ${textColor}`}>Abandon Run</button>
-                )}
             </div>
+
+            {/* ========================================== */}
+            {/* RIGHT COLUMN: The Clock and Buttons        */}
+            {/* ========================================== */}
+            <div className="flex flex-col items-center mt-8 md:mt-20">
+                
+                {/* THE BIG CLOCK */}
+                <div className={`text-6xl md:text-7xl font-black px-10 py-8 rounded-3xl border-4 shadow-2xl tracking-tighter transition-all duration-500 ${gameOver ? 'text-slate-400 border-slate-800 bg-slate-900' : clockColor}`}>
+                    {formatTime(timeLeft)}
+                </div>
+                
+                <span className="text-slate-500 font-bold mt-4 tracking-[0.2em] uppercase text-xs">
+                    Time Remaining
+                </span>
+
+                {/* ABANDON BUTTON */}
+                <button 
+                    onClick={onExit}
+                    className="mt-16 text-slate-600 hover:text-red-400 font-black text-[10px] uppercase tracking-widest transition-colors"
+                >
+                    Abandon Run
+                </button>
+            </div>
+            
         </div>
-    );
+    </div>
+);
 };
 
         // --- MAIN APP COMPONENT ---
         const App = () => {
             const [view, setView] = useState('menu'); 
-            const [startLvl, setStartLvl] = useState(1.0);
+            const [startRating, setStartRating] = useState(800);
             const [activeDrill, setActiveDrill] = useState(null);
             const [selectedTheme, setSelectedTheme] = useState('Mix'); 
 
@@ -1065,8 +1073,8 @@ const ClassicalGauntletDrill = ({ onExit, themeFilter }) => {
 
 
                         {view === 'tiers' && (
-                            <TierSelector onSelect={(l) => { 
-                                setStartLvl(l); 
+                            <TierSelector onSelect={(rating) => { 
+                                setStartRating(rating); 
                                 // Clean logic: Only two paths now
                                 if (activeDrill === 'st') {
                                     setView('survivaltactics');
@@ -1079,7 +1087,7 @@ const ClassicalGauntletDrill = ({ onExit, themeFilter }) => {
                         {view === 'normaltactics' && (
                             <NormalTacticDrill 
                                 onExit={() => setView('menu')} 
-                                startLevel={startLvl} 
+                                initialRating={startRating} 
                                 themeFilter={selectedTheme} 
                             />
                         )}
