@@ -344,10 +344,153 @@ window.NORMAL_TACTICS = [
         fen: 'r3k2r/p2bbppp/4p3/2p1B1q1/3Q4/2PB4/P1P2PPP/R2R2K1 w kq - 0 1',
         solution: ['Qxd7+','Kxd7','Bb5+','Kc8','Ba6#'] 
     },
+    {
+        id: 'tactic_49',
+        rating: 600,
+        theme: 'Capturing',
+        fen: '4k3/8/4np2/4p3/2B1P3/8/5P2/4K3 w - - 0 1',
+        solution: ['Bxe6'] 
+    },
+    {
+        id: 'tactic_50',
+        rating: 600,
+        theme: 'Capturing',
+        fen: '6k1/2p1b1pp/1pn5/4p1B1/8/P1N1P3/1P3PP1/4K3 b - - 0 1',
+        solution: ['Bxg5'] 
+    },
+    {
+        id: 'tactic_61',
+        rating: 600,
+        theme: 'Capturing',
+        fen: 'r7/5kp1/5p2/3b4/p7/P1N3P1/5P2/4R1K1 w - - 0 1',
+        solution: ['Nxd5'] 
+    },
+    {
+        id: 'tactic_62',
+        rating: 600,
+        theme: 'Capturing',
+        fen: 'r7/8/3k4/p2p4/3Pn3/2P3P1/3B2K1/2R5 b - - 0 1',
+        solution: ['Nxd2'] 
+    },
+    {
+        id: 'tactic_63',
+        rating: 600,
+        theme: 'Capturing',
+        fen: '4r1k1/1p3pp1/2pn4/8/7P/5BP1/1P3PK1/3R4 w - - 0 1',
+        solution: ['Rxd6'] 
+    },
+    {
+        id: 'tactic_64',
+        rating: 610,
+        theme: 'Capturing',
+        fen: '8/r4pkp/4np2/2p5/8/BP6/2P2PP1/4R1K1 b - - 0 1',
+        solution: ['Rxa3'] 
+    },
+    {
+        id: 'tactic_65',
+        rating: 620,
+        theme: 'Capturing',
+        fen: '7k/4q1p1/2p4r/rp6/8/7P/2PQ2P1/3R1RK1 w - - 0 1',
+        solution: ['Qxa5'] 
+    },
+    {
+        id: 'tactic_66',
+        rating: 620,
+        theme: 'Capturing',
+        fen: '4n1k1/1p3qbp/2p5/2Q4N/8/1P5P/P5PK/5B2 b - - 0 1',
+        solution: ['Qxf1'] 
+    },
+    {
+        id: 'tactic_67',
+        rating: 610,
+        theme: 'Capturing',
+        fen: '6k1/5pp1/8/1p6/4n3/1B3KP1/1BP2b1P/8 w - - 0 1',
+        solution: ['Kxe4'] 
+    },
+    {
+        id: 'tactic_68',
+        rating: 610,
+        theme: 'Capturing',
+        fen: '3r1bk1/5Npp/8/1pp5/8/1P6/2P2PPP/4R1K1 b - - 0 1',
+        solution: ['Kxf7'] 
+    },
+    {
+        id: 'tactic_69',
+        rating: 2350,
+        theme: 'Composition: Mate in 2',
+        fen: 'K5Q1/3p1R2/3P3p/5N1p/3Pk2P/3p1p2/3B4/7B w - - 0 1',
+        solution: ['Kb7','Kd5','Re7#'] 
+    },
+    {
+        id: 'tactic_70',
+        rating: 1120,
+        theme: 'Mating Attack',
+        fen: 'r1b1qN1k/1pp3p1/p2p3n/4p1B1/8/1BP4Q/PP3KPP/RN6 w - - 0 1',
+        solution: ['Qxh6+','gxh6','Bf6#'] 
+    },
+    {
+        id: 'tactic_71',
+        rating: 1180,
+        theme: 'Mating Attack',
+        fen: '5r1k/6p1/p2p1rRp/2pPpq1Q/8/PPp1P3/5P1R/K7 w - - 0 1',
+        solution: [''] 
+    },
+    {
+        id: 'tactic_72',
+        rating: 1150,
+        theme: 'Mating Attack',
+        fen: 'r1bq2rk/pp3pbp/2p1p1pQ/7P/3P4/2PB1N2/PP3PPR/2KR4 w - - 0 1',
+        solution: ['Qxh7+','Kxh7','hxg6#'] 
+    },
+    {
+        id: 'tactic_73',
+        rating: 1200,
+        theme: 'Mating Attack',
+        fen: 'r1b1kb1r/p1qn1pp1/2N1pn1p/2p5/1P6/3B4/P1P1QPPP/R1B1K1NR w KQkq - 0 1',
+        solution: ['Qxe6+','fxe6','Bg6#'] 
+    },
+    {
+        id: 'tactic_74',
+        rating: 1160,
+        theme: 'Mating Attack',
+        fen: '4r2k/2p1rb1p/P2p4/2p2Q2/3qP3/8/1PPN2R1/1K2R3 w - - 0 1',
+        solution: ['Qxh7+','Kxh7','Rh1+'] 
+    },
+    {
+        id: 'tactic_75',
+        rating: 1350,
+        theme: 'Decoy',
+        fen: '6r1/1pp2kb1/2b4p/p1qN4/2P2p2/1P3P2/P6P/2QR1B1K b - - 0 1',
+        solution: ['Qg1+','Kxg1','Bd4+','Kh1','Rg1#'] 
+    },
+    {
+        id: 'tactic_76',
+        rating: 1650,
+        theme: 'Decoy',
+        fen: '7r/1q2bpk1/p3pn2/1p2R2r/3Nn1p1/P1PQ4/1P3PPB/3R1NK1 b - - 0 1',
+        solution: ['Rxe5','Bxe5','Rh1+','Kxh1','Nf2+'],
+        alternatives: {0:['g3']}, 
+    },
+    {
+        id: 'tactic_77',
+        rating: 1330,
+        theme: 'Decoy',
+        fen: 'rq3b1r/p2Qnppp/k1B5/8/2N1P3/5b2/PP3P1P/R1B1K2R w KQ - 0 1',
+        solution: ['Bb7+','Qxb7','Qa4#'] 
+    },
+    {
+        id: 'tactic_78',
+        rating: 1550,
+        theme: 'Decoy',
+        fen: 'k6r/rb3R1p/NQ4p1/2p2n2/1p6/8/PPn3PP/6K1 w - - 0 1',
+        solution: ['Qc7','Rc8','Qb8+','Rxb8','Nc7#']
+    },
+
+
     // {
     //     id: 'tactic_',
     //     rating: ,
-    //     theme: 'Decoy',
+    //     theme: '',
     //     fen: '',
     //     solution: [''] 
     // },
