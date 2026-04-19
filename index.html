@@ -291,8 +291,6 @@ const Chessboard = ({ pieces = [], markers = [], onSquareClick, onPieceDrop, dis
         }
     }
 
-    // ... return wrapper ...
-
     return (
         <div className="w-full border-4 border-slate-800 rounded-sm overflow-hidden shadow-2xl bg-white">
             <div className="grid grid-cols-8 grid-rows-8 w-full h-full">
@@ -310,28 +308,28 @@ const TierSelector = ({ onSelect, onBack }) => {
             </div>
             
             {/* Novice Tier */}
-            <button onClick={() => onSelect(800)} className="w-full text-left p-6 bg-slate-800 rounded-xl shadow-lg border border-slate-700 hover:border-green-500 hover:bg-slate-800/80 transition-all duration-200 group">
+            <button onClick={() => onSelect(700)} className="w-full text-left p-6 bg-slate-800 rounded-xl shadow-lg border border-slate-700 hover:border-green-500 hover:bg-slate-800/80 transition-all duration-200 group">
                 <div className="flex justify-between items-center">
                     <h3 className="text-xl font-bold text-green-400 transition-colors">U1000 Class</h3>
-                    <span className="bg-green-900/40 border border-green-800/50 text-green-300 text-xs font-bold px-3 py-1 rounded">Start: 800 Elo</span>
+                    <span className="bg-green-900/40 border border-green-800/50 text-green-300 text-xs font-bold px-3 py-1 rounded">Start: 700 Elo</span>
                 </div>
                 <p className="text-slate-400 mt-2">Building foundational visualization. Focus on 1-move calculations.</p>
             </button>
 
             {/* Club Tier */}
-            <button onClick={() => onSelect(1300)} className="w-full text-left p-6 bg-slate-800 rounded-xl shadow-lg border border-slate-700 hover:border-blue-500 hover:bg-slate-800/80 transition-all duration-200 group">
+            <button onClick={() => onSelect(1200)} className="w-full text-left p-6 bg-slate-800 rounded-xl shadow-lg border border-slate-700 hover:border-blue-500 hover:bg-slate-800/80 transition-all duration-200 group">
                 <div className="flex justify-between items-center">
                     <h3 className="text-xl font-bold text-blue-400 transition-colors">U1600 Class</h3>
-                    <span className="bg-blue-900/40 border border-blue-800/50 text-blue-400 text-xs font-bold px-3 py-1 rounded">Start: 1300 Elo</span>
+                    <span className="bg-blue-900/40 border border-blue-800/50 text-blue-400 text-xs font-bold px-3 py-1 rounded">Start: 1200 Elo</span>
                 </div>
                 <p className="text-slate-400 mt-2">Testing your sight. Deep tactical lines and first-contact trades.</p>
             </button>
 
             {/* Master Tier */}
-            <button onClick={() => onSelect(1800)} className="w-full text-left p-6 bg-slate-800 rounded-xl shadow-lg border border-slate-700 hover:border-purple-500 hover:bg-slate-800/80 transition-all duration-200 group">
+            <button onClick={() => onSelect(1700)} className="w-full text-left p-6 bg-slate-800 rounded-xl shadow-lg border border-slate-700 hover:border-purple-500 hover:bg-slate-800/80 transition-all duration-200 group">
                 <div className="flex justify-between items-center">
                     <h3 className="text-xl font-bold text-purple-400 transition-colors">Open Class</h3>
-                    <span className="bg-purple-900/40 border border-purple-800/50 text-purple-300 text-xs font-bold px-3 py-1 rounded">Start: 1800 Elo</span>
+                    <span className="bg-purple-900/40 border border-purple-800/50 text-purple-300 text-xs font-bold px-3 py-1 rounded">Start: 1700 Elo</span>
                 </div>
                 <p className="text-slate-400 mt-2">Elite calculation. Complex interference, quiet moves, and deep variations.</p>
             </button>
@@ -357,7 +355,7 @@ const TierSelector = ({ onSelect, onBack }) => {
             const [game, setGame] = React.useState(null);
             const [currentFen, setCurrentFen] = React.useState('');
             const [feedback, setFeedback] = React.useState("");
-            
+            const [pendingPromotion, setPendingPromotion] = React.useState(null);
             const [attemptState, setAttemptState] = React.useState('playing');
             const [shakeError, setShakeError] = React.useState(false);
             const [stepIndex, setStepIndex] = React.useState(0);
@@ -396,105 +394,21 @@ const TierSelector = ({ onSelect, onBack }) => {
                 setTimeout(() => setShakeError(true), 10);
             };
 
-            const handleSquareClick = (col, row) => {
-                if (attemptState === 'revealed' || !game) return;
+           // Helper to safely check if a move triggers a promotion
+    const isPromotionMove = (from, to) => {
+        const legalMoves = game.moves({ verbose: true });
+        return legalMoves.some(m => m.from === from && m.to === to && m.flags.includes('p'));
+    };
 
-                const sq = `${String.fromCharCode(col + 97)}${row + 1}`;
-
-                if (!selectedSquare) {
-                    const piece = game.get(sq);
-                    if (piece && piece.color === game.turn()) {
-                        setSelectedSquare(sq);
-                    }
-                    return;
-                }
-
-                if (selectedSquare === sq) {
-                    setSelectedSquare(null);
-                    return;
-                }
-
-                const moveAttempt = { from: selectedSquare, to: sq, promotion: 'q' };
-                const tempGame = new Chess(game.fen());
-                const result = tempGame.move(moveAttempt);
-
-                if (!result) {
-                    const piece = game.get(sq);
-                    if (piece && piece.color === game.turn()) {
-                        setSelectedSquare(sq); 
-                    } else {
-                        setSelectedSquare(null); 
-                    }
-                    return;
-                }
-
-
-                const solutionArray = Array.isArray(puzzle.solution) ? puzzle.solution : [puzzle.solution];
-                const expectedMove = solutionArray[stepIndex];
-                const stepAlternatives = (puzzle.alternatives && puzzle.alternatives[stepIndex]) ? puzzle.alternatives[stepIndex] : [];
-                
-                const isMainLine = result.san === expectedMove;
-                const isAlternative = stepAlternatives.includes(result.san);
-
-                if (isMainLine) {
-                    game.move(moveAttempt);
-                    setCurrentFen(game.fen());
-                    setSelectedSquare(null);
-
-                    const nextStep = stepIndex + 1;
-                    const opponentReply = solutionArray[nextStep];
-
-                    if (opponentReply) {
-                        setFeedback("Correct! Opponent is thinking...");
-                        setStepIndex(nextStep + 1);
-                        
-                        setTimeout(() => {
-                            game.move(opponentReply);
-                            setCurrentFen(game.fen());
-                            setFeedback(`Opponent played ${opponentReply}. Your turn!`);
-                        }, 500);
-
-                    } else {
-                        if (attemptState === 'playing') {
-                            setFeedback("Perfect! Tactical sequence complete. (+20)");
-                            updateRating(20);
-                        } else {
-                            setFeedback("Correct! Good recovery. (-15)");
-                            updateRating(-5);
-                        }
-                        setAttemptState('revealed');
-                    }
-                } else if (isAlternative) {
-                    setFeedback(`Alternative move (${result.san})! That works, but there's a better one. Try again.`);
-                    setSelectedSquare(null);
-                } else {
-                    triggerShake();
-                    setSelectedSquare(null);
-                    if (attemptState === 'playing') {
-                        setFeedback(`Incorrect move (${result.san}). Look deeper! (Strike 1)`);
-                        setAttemptState('strike1');
-                    } else {
-                        setFeedback(`Incorrect. Main line was: ${solutionArray.join(', ')}. (-10)`);
-                        updateRating(-10);
-                        setAttemptState('revealed');
-                        game.move(expectedMove);
-                        setCurrentFen(game.fen());
-                    }
-                }
-            };
-const onPieceDrop = (sourceSquare, targetSquare, piece) => {
-        // 1. Guard clauses (Don't allow moves if puzzle is over)
-        if (attemptState === 'revealed' || !game) return false;
-
-        // 2. Try the move on a temporary board
-        const moveAttempt = { from: sourceSquare, to: targetSquare, promotion: 'q' };
+    const executeMove = (moveAttempt) => {
         const tempGame = new Chess(game.fen());
         const result = tempGame.move(moveAttempt);
 
-        // 3. If it's an illegal chess move, return false so the piece snaps back
-        if (!result) return false;
+        if (!result) {
+            setSelectedSquare(null);
+            return false;
+        }
 
-        // 4. Validate against puzzle solution
         const solutionArray = Array.isArray(puzzle.solution) ? puzzle.solution : [puzzle.solution];
         const expectedMove = solutionArray[stepIndex];
         const stepAlternatives = (puzzle.alternatives && puzzle.alternatives[stepIndex]) ? puzzle.alternatives[stepIndex] : [];
@@ -506,7 +420,7 @@ const onPieceDrop = (sourceSquare, targetSquare, piece) => {
             // --- CORRECT MOVE ---
             game.move(moveAttempt);
             setCurrentFen(game.fen());
-            setSelectedSquare(null); // Clear any lingering clicks
+            setSelectedSquare(null);
 
             const nextStep = stepIndex + 1;
             const opponentReply = solutionArray[nextStep];
@@ -531,17 +445,15 @@ const onPieceDrop = (sourceSquare, targetSquare, piece) => {
                 }
                 setAttemptState('revealed');
             }
-            return true; // Tells the board to accept the drop
-
+            return true; 
         } else if (isAlternative) {
             // --- ALTERNATIVE MOVE ---
             setFeedback(`Alternative move (${result.san})! That works, but there's a better one. Try again.`);
             setSelectedSquare(null);
-            return false; // Snaps piece back
-
+            return false; 
         } else {
             // --- INCORRECT MOVE (Strike System) ---
-            triggerShake();
+            triggerShake(); // Assumes triggerShake is defined in your component!
             setSelectedSquare(null);
             
             if (attemptState === 'playing') {
@@ -554,12 +466,45 @@ const onPieceDrop = (sourceSquare, targetSquare, piece) => {
                 updateRating(-10);
                 setAttemptState('revealed');
                 
-                // Show them the expected move
                 game.move(expectedMove);
                 setCurrentFen(game.fen());
             }
-            return false; // Snaps the dragged piece back (even on strike 2, because the fen instantly updates to show the correct move)
+            return false; 
         }
+    };
+    const handleSquareClick = (col, row) => {
+        if (attemptState === 'revealed' || !game) return;
+        const sq = `${String.fromCharCode(col + 97)}${row + 1}`;
+
+        if (!selectedSquare) {
+            const piece = game.get(sq);
+            if (piece && piece.color === game.turn()) setSelectedSquare(sq);
+            return;
+        }
+
+        if (selectedSquare === sq) { setSelectedSquare(null); return; }
+
+        // INTERCEPT PROMOTION
+        if (isPromotionMove(selectedSquare, sq)) {
+            setPendingPromotion({ from: selectedSquare, to: sq });
+            return; 
+        }
+
+        // Standard move
+        executeMove({ from: selectedSquare, to: sq, promotion: 'q' });
+    };
+
+    const onPieceDrop = (sourceSquare, targetSquare, piece) => {
+        if (attemptState === 'revealed' || !game) return false;
+
+        // INTERCEPT PROMOTION
+        if (isPromotionMove(sourceSquare, targetSquare)) {
+            setPendingPromotion({ from: sourceSquare, to: targetSquare });
+            return false; 
+        }
+
+        // Standard move
+        return executeMove({ from: sourceSquare, to: targetSquare, promotion: 'q' });
     };
 
             if (!puzzle) return <div className="text-slate-500 font-bold mt-10">Loading Database...</div>;
@@ -607,6 +552,56 @@ const onPieceDrop = (sourceSquare, targetSquare, piece) => {
                         {feedback}
                     </div>
                     <div className={`w-full max-w-lg ${shakeError ? 'shake' : ''}`}>
+                    {/* THE PROMOTION MODAL OVERLAY */}
+                   {pendingPromotion && (
+                        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center rounded-sm">
+                            <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4 border-4 border-slate-200">
+                                
+                                <span className="text-slate-400 font-bold tracking-[0.2em] uppercase text-[10px]">
+                                    Promote to:
+                                </span>
+                                
+                                <div className="flex gap-3">
+                                    {['q', 'r', 'b', 'n'].map(pieceType => {
+                                        const isWhite = game.turn() === 'w';
+                                        
+                                        // THE FIX: Map the short letter to your dictionary's exact words
+                                        const displayNames = { q: 'Queen', r: 'Rook', b: 'Bishop', n: 'Knight' };
+                                        const displayType = displayNames[pieceType];
+                                        
+                                        return (
+                                            <button 
+                                                key={pieceType} 
+                                                onClick={() => {
+                                                    executeMove({ 
+                                                        from: pendingPromotion.from, 
+                                                        to: pendingPromotion.to, 
+                                                        promotion: pieceType // Keeps the 'q' for the chess engine!
+                                                    });
+                                                    setPendingPromotion(null);
+                                                }}
+                                                className="w-16 h-16 bg-slate-50 hover:bg-slate-200 rounded-xl flex items-center justify-center hover:scale-110 transition-all shadow-md border-2 border-slate-200 p-2 cursor-pointer"
+                                            >
+                                                <Piece type={displayType} color={isWhite ? 'White' : 'Black'} />
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Cancel Button */}
+                                <button 
+                                    onClick={() => {
+                                        setPendingPromotion(null);
+                                        setSelectedSquare(null);
+                                    }}
+                                    className="mt-2 text-slate-400 hover:text-red-500 font-black text-[10px] uppercase tracking-widest transition-colors"
+                                >
+                                    Cancel
+                                </button>
+
+                            </div>
+                        </div>
+                    )}
                         <Chessboard 
                             pieces={getPiecesFromFEN(currentFen)} 
                             markers={markers}
@@ -635,7 +630,7 @@ const onPieceDrop = (sourceSquare, targetSquare, piece) => {
         800, 
         themeFilter
     );
-    
+    const [pendingPromotion, setPendingPromotion] = React.useState(null);
     const [puzzle, setPuzzle] = React.useState(null);
     const [game, setGame] = React.useState(null);
     const [currentFen, setCurrentFen] = React.useState('');
@@ -670,117 +665,15 @@ const onPieceDrop = (sourceSquare, targetSquare, piece) => {
     }, [getNextPuzzle]);
 
     React.useEffect(() => { if (!puzzle && !gameOver) loadNewPuzzle(currentRating); }, [puzzle, loadNewPuzzle, gameOver]);
-
-    // NEW: Reset functionality for Game Over
-    const handleRestart = () => {
-        setLives(3);
-        setStreak(0);
-        setGameOver(false);
-        // We need to fetch a Level 1 puzzle manually to bypass the currentLevel state lag
-        updateRating(-currentRating + 800); // Force back to 1.0
-        loadNewPuzzle(800); 
-    };
-
-    const handleSquareClick = (col, row) => {
-        if (attemptState === 'revealed' || !game || gameOver) return;
-        const sq = `${String.fromCharCode(col + 97)}${row + 1}`;
-
-        if (!selectedSquare) {
-            const piece = game.get(sq);
-            if (piece && piece.color === game.turn()) setSelectedSquare(sq);
-            return;
-        }
-
-        if (selectedSquare === sq) { setSelectedSquare(null); return; }
-
-        const moveAttempt = { from: selectedSquare, to: sq, promotion: 'q' };
+    const executeMove = (moveAttempt) => {
         const tempGame = new Chess(game.fen());
         const result = tempGame.move(moveAttempt);
 
         if (!result) {
-            const piece = game.get(sq);
-            if (piece && piece.color === game.turn()) setSelectedSquare(sq);
-            else setSelectedSquare(null);
-            return;
+            setSelectedSquare(null);
+            return false;
         }
 
-        const solutionArray = Array.isArray(puzzle.solution) ? puzzle.solution : [puzzle.solution];
-        const expectedMove = solutionArray[stepIndex];
-        const stepAlternatives = (puzzle.alternatives && puzzle.alternatives[stepIndex]) ? puzzle.alternatives[stepIndex] : [];
-        
-        if (result.san === expectedMove) {
-            game.move(moveAttempt);
-            setCurrentFen(game.fen());
-            setSelectedSquare(null);
-            const nextStep = stepIndex + 1;
-            const opponentReply = solutionArray[nextStep];
-
-            if (opponentReply) {
-                setFeedback("Correct! Opponent is thinking...");
-                setStepIndex(nextStep + 1);
-                setTimeout(() => {
-                    game.move(opponentReply);
-                    setCurrentFen(game.fen());
-                    setFeedback(`Opponent played ${opponentReply}. Your turn!`);
-                }, 500);
-            } else {
-                // SURVIVAL WIN LOGIC: +0.8 Level, +1 Streak
-                const newStreak = streak + 1;
-                let winMessage = `Boom! (+35)`;
-                
-                if (newStreak >= 5 && lives < MAX_LIVES) {
-                    setLives(l => l + 1);
-                    setStreak(0);
-                    winMessage = `LIFE STEAL! 💖 (+35)`;
-                } else if (newStreak >= 5 && lives === MAX_LIVES) {
-                    setStreak(0); // Reset streak even if full, keeps them grinding
-                    winMessage = `MAX LIVES! 🔥 (+35)`;
-                } else {
-                    setStreak(newStreak);
-                }
-
-                setFeedback(winMessage);
-                updateRating(35);
-                setAttemptState('revealed');
-            }
-        } else if (stepAlternatives.includes(result.san)) {
-            setFeedback(`Alternative move (${result.san})! Better one exists. No life lost.`);
-            setSelectedSquare(null);
-        } else {
-            // SURVIVAL LOSE LOGIC: Instant -1.0 Level, -1 Life, reset streak
-            setShakeError(false); setTimeout(() => setShakeError(true), 10);
-            setSelectedSquare(null);
-            
-            const newLives = lives - 1;
-            setLives(newLives);
-            setStreak(0);
-            updateRating(-50);
-            setAttemptState('revealed');
-            
-            game.move(expectedMove);
-            setCurrentFen(game.fen());
-
-            if (newLives <= 0) {
-                setFeedback("FATAL MISTAKE. Game Over.");
-                setGameOver(true);
-            } else {
-                setFeedback(`Ouch! Lost a life. Correct line: ${solutionArray.join(', ')}`);
-            }
-        }
-    };
-    const onPieceDrop = (sourceSquare, targetSquare, piece) => {
-        // 1. Guard clauses (Don't allow moves if puzzle is over or game is dead)
-        if (attemptState === 'revealed' || !game || gameOver) return false;
-
-        // 2. Try the move on a temporary board
-        const moveAttempt = { from: sourceSquare, to: targetSquare, promotion: 'q' };
-        const tempGame = new Chess(game.fen());
-        const result = tempGame.move(moveAttempt);
-
-        // 3. If it's an illegal chess move, return false so the piece snaps back
-        if (!result) return false;
-
-        // 4. It's a legal move! Let's check it against the puzzle solution.
         const solutionArray = Array.isArray(puzzle.solution) ? puzzle.solution : [puzzle.solution];
         const expectedMove = solutionArray[stepIndex];
         const stepAlternatives = (puzzle.alternatives && puzzle.alternatives[stepIndex]) ? puzzle.alternatives[stepIndex] : [];
@@ -789,7 +682,7 @@ const onPieceDrop = (sourceSquare, targetSquare, piece) => {
             // --- CORRECT MOVE LOGIC ---
             game.move(moveAttempt);
             setCurrentFen(game.fen());
-            setSelectedSquare(null); // Clear any lingering clicks
+            setSelectedSquare(null);
             
             const nextStep = stepIndex + 1;
             const opponentReply = solutionArray[nextStep];
@@ -812,7 +705,7 @@ const onPieceDrop = (sourceSquare, targetSquare, piece) => {
                     setStreak(0);
                     winMessage = `LIFE STEAL! 💖 (+35)`;
                 } else if (newStreak >= 5 && lives === MAX_LIVES) {
-                    setStreak(0); // Reset streak even if full
+                    setStreak(0); 
                     winMessage = `MAX LIVES! 🔥 (+35)`;
                 } else {
                     setStreak(newStreak);
@@ -822,14 +715,11 @@ const onPieceDrop = (sourceSquare, targetSquare, piece) => {
                 updateRating(35);
                 setAttemptState('revealed');
             }
-            return true; // Tells the board to leave the piece there
-
+            return true; 
         } else if (stepAlternatives.includes(result.san)) {
-            // --- ALTERNATIVE MOVE LOGIC ---
             setFeedback(`Alternative move (${result.san})! Better one exists. No life lost.`);
             setSelectedSquare(null);
-            return false; // Snaps piece back
-
+            return false; 
         } else {
             // --- SURVIVAL LOSE LOGIC ---
             setShakeError(false); setTimeout(() => setShakeError(true), 10);
@@ -841,7 +731,6 @@ const onPieceDrop = (sourceSquare, targetSquare, piece) => {
             updateRating(-50);
             setAttemptState('revealed');
             
-            // Show them the correct move
             game.move(expectedMove);
             setCurrentFen(game.fen());
 
@@ -851,9 +740,63 @@ const onPieceDrop = (sourceSquare, targetSquare, piece) => {
             } else {
                 setFeedback(`Ouch! Lost a life. Correct line: ${solutionArray.join(', ')}`);
             }
-            return false; // Snaps the piece they dragged back, though the board immediately updates to the correct fen!
+            return false; 
         }
     };
+
+    // NEW: Reset functionality for Game Over
+    const handleRestart = () => {
+        setLives(3);
+        setStreak(0);
+        setGameOver(false);
+        // We need to fetch a Level 1 puzzle manually to bypass the currentLevel state lag
+        updateRating(-currentRating + 800); // Force back to 1.0
+        loadNewPuzzle(800); 
+    };
+
+    // Helper to safely check if a move triggers a promotion
+    const isPromotionMove = (from, to) => {
+        // We use game.moves to ensure it's actually a legal promotion, 
+        // avoiding popping up the modal if they drag a pawn backwards by accident!
+        const legalMoves = game.moves({ verbose: true });
+        return legalMoves.some(m => m.from === from && m.to === to && m.flags.includes('p'));
+    };
+
+    const handleSquareClick = (col, row) => {
+        if (attemptState === 'revealed' || !game || gameOver) return;
+        const sq = `${String.fromCharCode(col + 97)}${row + 1}`;
+
+        if (!selectedSquare) {
+            const piece = game.get(sq);
+            if (piece && piece.color === game.turn()) setSelectedSquare(sq);
+            return;
+        }
+
+        if (selectedSquare === sq) { setSelectedSquare(null); return; }
+
+        // INTERCEPT PROMOTION
+        if (isPromotionMove(selectedSquare, sq)) {
+            setPendingPromotion({ from: selectedSquare, to: sq });
+            return; 
+        }
+
+        // Standard move
+        executeMove({ from: selectedSquare, to: sq, promotion: 'q' });
+    };
+
+    const onPieceDrop = (sourceSquare, targetSquare, piece) => {
+        if (attemptState === 'revealed' || !game || gameOver) return false;
+
+        // INTERCEPT PROMOTION
+        if (isPromotionMove(sourceSquare, targetSquare)) {
+            setPendingPromotion({ from: sourceSquare, to: targetSquare });
+            return false; // Snaps the piece back temporarily while the modal opens
+        }
+
+        // Standard move
+        return executeMove({ from: sourceSquare, to: targetSquare, promotion: 'q' });
+    };
+    
     if (!puzzle) return <div className="mt-20 text-slate-400 font-bold">Loading Database...</div>;
 
 return (
@@ -894,6 +837,56 @@ return (
 
                     {/* ROW 4: The Board */}
                     <div className={`w-full ${shakeError ? 'shake' : ''} ${gameOver ? 'grayscale opacity-70 transition-all duration-1000' : ''}`}> 
+                    {/* THE PROMOTION MODAL OVERLAY */}
+                   {pendingPromotion && (
+                        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center rounded-sm">
+                            <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4 border-4 border-slate-200">
+                                
+                                <span className="text-slate-400 font-bold tracking-[0.2em] uppercase text-[10px]">
+                                    Promote to:
+                                </span>
+                                
+                                <div className="flex gap-3">
+                                    {['q', 'r', 'b', 'n'].map(pieceType => {
+                                        const isWhite = game.turn() === 'w';
+                                        
+                                        // THE FIX: Map the short letter to your dictionary's exact words
+                                        const displayNames = { q: 'Queen', r: 'Rook', b: 'Bishop', n: 'Knight' };
+                                        const displayType = displayNames[pieceType];
+                                        
+                                        return (
+                                            <button 
+                                                key={pieceType} 
+                                                onClick={() => {
+                                                    executeMove({ 
+                                                        from: pendingPromotion.from, 
+                                                        to: pendingPromotion.to, 
+                                                        promotion: pieceType // Keeps the 'q' for the chess engine!
+                                                    });
+                                                    setPendingPromotion(null);
+                                                }}
+                                                className="w-16 h-16 bg-slate-50 hover:bg-slate-200 rounded-xl flex items-center justify-center hover:scale-110 transition-all shadow-md border-2 border-slate-200 p-2 cursor-pointer"
+                                            >
+                                                <Piece type={displayType} color={isWhite ? 'White' : 'Black'} />
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Cancel Button */}
+                                <button 
+                                    onClick={() => {
+                                        setPendingPromotion(null);
+                                        setSelectedSquare(null);
+                                    }}
+                                    className="mt-2 text-slate-400 hover:text-red-500 font-black text-[10px] uppercase tracking-widest transition-colors"
+                                >
+                                    Cancel
+                                </button>
+
+                            </div>
+                        </div>
+                    )}
                        <Chessboard 
                             pieces={getPiecesFromFEN(currentFen)} 
                             turn={game?.turn()}
@@ -982,6 +975,7 @@ const ClassicalGauntletDrill = ({ onExit, themeFilter }) => {
     const [game, setGame] = React.useState(null);
     const [currentFen, setCurrentFen] = React.useState('');
     const [feedback, setFeedback] = React.useState("");
+    const [pendingPromotion, setPendingPromotion] = React.useState(null);
     const [attemptState, setAttemptState] = React.useState('playing');
     const [shakeError, setShakeError] = React.useState(false);
     const [stepIndex, setStepIndex] = React.useState(0);
@@ -1066,27 +1060,19 @@ const ClassicalGauntletDrill = ({ onExit, themeFilter }) => {
         }
     };
 
-    const handleSquareClick = (col, row) => {
-        if (attemptState === 'revealed' || !game || gameOver) return;
-        const sq = `${String.fromCharCode(col + 97)}${row + 1}`;
+// Helper to safely check if a move triggers a promotion
+    const isPromotionMove = (from, to) => {
+        const legalMoves = game.moves({ verbose: true });
+        return legalMoves.some(m => m.from === from && m.to === to && m.flags.includes('p'));
+    };
 
-        if (!selectedSquare) {
-            const piece = game.get(sq);
-            if (piece && piece.color === game.turn()) setSelectedSquare(sq);
-            return;
-        }
-
-        if (selectedSquare === sq) { setSelectedSquare(null); return; }
-
-        const moveAttempt = { from: selectedSquare, to: sq, promotion: 'q' };
+    const executeMove = (moveAttempt) => {
         const tempGame = new Chess(game.fen());
         const result = tempGame.move(moveAttempt);
 
         if (!result) {
-            const piece = game.get(sq);
-            if (piece && piece.color === game.turn()) setSelectedSquare(sq);
-            else setSelectedSquare(null);
-            return;
+            setSelectedSquare(null);
+            return false;
         }
 
         const solutionArray = Array.isArray(puzzle.solution) ? puzzle.solution : [puzzle.solution];
@@ -1094,76 +1080,17 @@ const ClassicalGauntletDrill = ({ onExit, themeFilter }) => {
         const stepAlternatives = (puzzle.alternatives && puzzle.alternatives[stepIndex]) ? puzzle.alternatives[stepIndex] : [];
         
         if (result.san === expectedMove) {
+            // --- CORRECT MOVE ---
             game.move(moveAttempt);
             setCurrentFen(game.fen());
             setSelectedSquare(null);
-            
-            const nextStep = stepIndex + 1;
-            const opponentReply = solutionArray[nextStep];
-
-            if (opponentReply) {
-                // Phase Transition: Move 1 correct, switch to 30s Execution Phase
-                if (stepIndex === 0) {
-                    setClockPhase('execution');
-                    setTimeLeft(30);
-                }
-                
-                setIsClockRunning(false); // Pause clock while opponent "thinks"
-                setFeedback("Correct. Awaiting opponent reply...");
-                setStepIndex(nextStep + 1);
-                
-                setTimeout(() => {
-                    game.move(opponentReply);
-                    setCurrentFen(game.fen());
-                    setFeedback(`Opponent played ${opponentReply}. Execute!`);
-                    setTimeLeft(30); // Snap back to 30s for the student's next move
-                    setIsClockRunning(true);
-                }, 500);
-            } else {
-                // Puzzle Complete
-                setIsClockRunning(false);
-                setFeedback("Flawless execution. (+50)");
-                updateRating(50);
-                setAttemptState('revealed');
-            }
-        } else if (stepAlternatives.includes(result.san)) {
-            // THE TIME TAX: Alternative move, clock does NOT reset, piece returns to start.
-            setFeedback(`Alternative move (${result.san}). Keep looking! Clock is draining.`);
-            setSelectedSquare(null);
-        } else {
-            // BLUNDER
-            handleFailure(`Fatal Blunder (${result.san}).`);
-        }
-    };
-    const onPieceDrop = (sourceSquare, targetSquare, piece) => {
-        // 1. Guard clauses (Don't allow moves if game is over)
-        if (attemptState === 'revealed' || !game || gameOver) return false;
-
-        // 2. Try the move on a temporary board
-        const moveAttempt = { from: sourceSquare, to: targetSquare, promotion: 'q' };
-        const tempGame = new Chess(game.fen());
-        const result = tempGame.move(moveAttempt);
-
-        // 3. If it's an illegal chess move, return false so the piece snaps back
-        if (!result) return false;
-
-        // 4. It's a legal move! Let's check it against the puzzle solution.
-        const solutionArray = Array.isArray(puzzle.solution) ? puzzle.solution : [puzzle.solution];
-        const expectedMove = solutionArray[stepIndex];
-        const stepAlternatives = (puzzle.alternatives && puzzle.alternatives[stepIndex]) ? puzzle.alternatives[stepIndex] : [];
-        
-        if (result.san === expectedMove) {
-            // THE CORRECT MOVE
-            game.move(moveAttempt);
-            setCurrentFen(game.fen());
-            setSelectedSquare(null); // Clear any clicks if they dragged instead
             
             const nextStep = stepIndex + 1;
             const opponentReply = solutionArray[nextStep];
 
             if (opponentReply) {
                 // Phase Transition Logic (Opponent Reply)
-                if (stepIndex === 0 && setClockPhase) {
+                if (stepIndex === 0) {
                     setClockPhase('execution');
                     setTimeLeft(30);
                 }
@@ -1176,30 +1103,63 @@ const ClassicalGauntletDrill = ({ onExit, themeFilter }) => {
                     game.move(opponentReply);
                     setCurrentFen(game.fen());
                     setFeedback(`Opponent played ${opponentReply}. Execute!`);
-                    if (setTimeLeft) setTimeLeft(30); 
+                    setTimeLeft(30); 
                     setIsClockRunning(true);
                 }, 500);
             } else {
-                // Puzzle Complete Logic
+                // --- PUZZLE COMPLETE ---
                 setIsClockRunning(false);
                 setFeedback("Flawless execution. (+50)");
                 updateRating(50);
                 setAttemptState('revealed');
             }
-            return true; // Tells the board to leave the piece there
+            return true; 
             
         } else if (stepAlternatives.includes(result.san)) {
-            // THE TIME TAX (Alternative move)
+            // --- THE TIME TAX (Alternative move) ---
             setFeedback(`Alternative move (${result.san}). Keep looking! Clock is draining.`);
             setSelectedSquare(null);
-            return false; // Snaps piece back
+            return false; 
         } else {
-            // FATAL BLUNDER
+            // --- FATAL BLUNDER ---
             handleFailure(`Fatal Blunder (${result.san}).`);
-            return false; // Snaps piece back
+            return false; 
         }
     };
+    const handleSquareClick = (col, row) => {
+        if (attemptState === 'revealed' || !game || gameOver) return;
+        const sq = `${String.fromCharCode(col + 97)}${row + 1}`;
 
+        if (!selectedSquare) {
+            const piece = game.get(sq);
+            if (piece && piece.color === game.turn()) setSelectedSquare(sq);
+            return;
+        }
+
+        if (selectedSquare === sq) { setSelectedSquare(null); return; }
+
+        // INTERCEPT PROMOTION
+        if (isPromotionMove(selectedSquare, sq)) {
+            setPendingPromotion({ from: selectedSquare, to: sq });
+            return; 
+        }
+
+        // Standard move
+        executeMove({ from: selectedSquare, to: sq, promotion: 'q' });
+    };
+
+    const onPieceDrop = (sourceSquare, targetSquare, piece) => {
+        if (attemptState === 'revealed' || !game || gameOver) return false;
+
+        // INTERCEPT PROMOTION
+        if (isPromotionMove(sourceSquare, targetSquare)) {
+            setPendingPromotion({ from: sourceSquare, to: targetSquare });
+            return false; 
+        }
+
+        // Standard move
+        return executeMove({ from: sourceSquare, to: targetSquare, promotion: 'q' });
+    };
 
     if (!puzzle) return <div className="mt-20 text-slate-400 font-bold">Loading Database...</div>;
 
@@ -1239,6 +1199,56 @@ return (
 
                 {/* ROW 3: THE BOARD */}
                 <div className={`w-full ${shakeError ? 'shake' : ''}`}>
+                {/* THE PROMOTION MODAL OVERLAY */}
+                   {pendingPromotion && (
+                        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center rounded-sm">
+                            <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4 border-4 border-slate-200">
+                                
+                                <span className="text-slate-400 font-bold tracking-[0.2em] uppercase text-[10px]">
+                                    Promote to:
+                                </span>
+                                
+                                <div className="flex gap-3">
+                                    {['q', 'r', 'b', 'n'].map(pieceType => {
+                                        const isWhite = game.turn() === 'w';
+                                        
+                                        // THE FIX: Map the short letter to your dictionary's exact words
+                                        const displayNames = { q: 'Queen', r: 'Rook', b: 'Bishop', n: 'Knight' };
+                                        const displayType = displayNames[pieceType];
+                                        
+                                        return (
+                                            <button 
+                                                key={pieceType} 
+                                                onClick={() => {
+                                                    executeMove({ 
+                                                        from: pendingPromotion.from, 
+                                                        to: pendingPromotion.to, 
+                                                        promotion: pieceType // Keeps the 'q' for the chess engine!
+                                                    });
+                                                    setPendingPromotion(null);
+                                                }}
+                                                className="w-16 h-16 bg-slate-50 hover:bg-slate-200 rounded-xl flex items-center justify-center hover:scale-110 transition-all shadow-md border-2 border-slate-200 p-2 cursor-pointer"
+                                            >
+                                                <Piece type={displayType} color={isWhite ? 'White' : 'Black'} />
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Cancel Button */}
+                                <button 
+                                    onClick={() => {
+                                        setPendingPromotion(null);
+                                        setSelectedSquare(null);
+                                    }}
+                                    className="mt-2 text-slate-400 hover:text-red-500 font-black text-[10px] uppercase tracking-widest transition-colors"
+                                >
+                                    Cancel
+                                </button>
+
+                            </div>
+                        </div>
+                    )}
                     <Chessboard 
                         pieces={getPiecesFromFEN(currentFen)} 
                         turn={game?.turn()}
