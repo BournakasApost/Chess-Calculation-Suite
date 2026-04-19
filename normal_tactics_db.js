@@ -708,7 +708,7 @@ window.NORMAL_TACTICS = [
         id: 'tactic_110',
         rating: 1250,
         theme: 'Decoy',
-        fen: 'rnb1kb1r/ppN2ppp/3p4/1q6/4PQn1/8/PPP2PPP/R1B1K1NR b - - 0 2',
+        fen: 'rnb1kb1r/ppp2ppp/2qp4/3N4/4PQn1/8/PPP2PPP/R1B1KBNR w - - 0 2',
         solution: ['Bb5','Qxb5','Nxc7+'] 
     },
     {
