@@ -913,7 +913,7 @@ return (
                     {attemptState === 'revealed' && !gameOver && (
                         <div className="flex gap-2 mt-6 w-full">
                             <button onClick={() => window.open(`https://lichess.org/analysis/${puzzle.fen}`, '_blank')} className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm hover:bg-slate-200 transition-colors">Analyze</button>
-                            <button onClick={() => loadNewPuzzle(currentRating)} className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 transition-colors">Next Puzzle</button>
+                            <button onClick={() => loadNewPuzzle(currentRating)} className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl text-sm shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors">Next Puzzle</button>
                         </div>
                     )}
                 </div>
@@ -1046,7 +1046,6 @@ const ClassicalGauntletDrill = ({ onExit, themeFilter }) => {
         setShakeError(false); setTimeout(() => setShakeError(true), 10);
         setSelectedSquare(null);
         
-        // ❌ DELETE updateRating(-2500) entirely! Let their high score stay frozen.
         
         setAttemptState('revealed');
         setGameOver(true);
@@ -1253,7 +1252,7 @@ return (
                         pieces={getPiecesFromFEN(currentFen)} 
                         turn={game?.turn()}
                         onSquareClick={handleSquareClick}
-                        onPieceDrop={onPieceDrop} // <--- ADD THIS LINE!
+                        onPieceDrop={onPieceDrop} 
                         renderMode="normal" 
                     />
                 </div>
@@ -1288,7 +1287,7 @@ return (
                     {attemptState === 'revealed' && !gameOver && (
                         <div className="flex gap-2 mt-6 w-full">
                             <button onClick={() => window.open(`https://lichess.org/analysis/${puzzle.fen}`, '_blank')} className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm hover:bg-slate-200 transition-colors">Analyze</button>
-                            <button onClick={() => loadNewPuzzle(currentRating)} className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 transition-colors">Next Puzzle</button>
+                            <button onClick={() => loadNewPuzzle(currentRating)} className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl text-sm shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors">Next Puzzle</button>
                         </div>
                     )}
                 
