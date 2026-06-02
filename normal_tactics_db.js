@@ -4551,7 +4551,147 @@ window.NORMAL_TACTICS = [
         fen: 'r2r2k1/5pb1/2p1P2p/2R1nBpQ/1p2N3/1P5P/PP4q1/1KR5 b - - 0 1',
         solution: ['Qxb2+','Kxb2','Nc4+','Kc2','Na3#'] 
     },
-
+    {
+        id: 'tactic_654',
+        rating: 630,
+        theme: 'Capturing',
+        fen: '1k3r1r/pppb2bp/2n1p1p1/1B2Pp2/8/2B1N2P/PPP2PP1/3R1RK1 w - - 0 1',
+        solution: ['Rxd7'] 
+    },
+    {
+        id: 'tactic_655',
+        rating: 620,
+        theme: 'Capturing',
+        fen: 'r4rk1/pppbqppp/2n1pn2/2bp4/5PQ1/1PN1PN2/PBPPB1PP/R4RK1 b - - 0 1',
+        solution: ['Nxg4'] 
+    },
+    {
+        id: 'tactic_656',
+        rating: 660,
+        theme: 'Capturing',
+        fen: 'r4rk1/ppp2ppp/2nb1n2/5P2/3P4/1BN2N2/PqP2QPP/R4RK1 b - - 0 1',
+        solution: ['Qxc3'] 
+    },
+    {
+        id: 'tactic_657',
+        rating: 2670,
+        theme: 'Composition: Mate in 2',
+        fen: '8/1N6/p7/Pp6/k1P5/8/1PR2P2/1KN3Q1 w - - 0 1',
+        solution: ['Qg4','b4','Qd7#'] 
+    },
+    {
+        id: 'tactic_658',
+        rating: 850,
+        theme: 'Mate in 1',
+        fen: 'r4rk1/pp3ppp/2p5/4Q1b1/4N3/1P2PbPq/PB3P1P/R4RK1 w - - 8 22',
+        solution: ['Qxg7#'] 
+    },
+    {
+        id: 'tactic_659',
+        rating: 870,
+        theme: 'Mate in 1',
+        fen: '3N4/5R2/2pk1nr1/1p2p2p/1PP1P2P/3P4/1K6/8 w - - 5 41',
+        solution: ['c5#'] 
+    },
+    {
+        id: 'tactic_660',
+        rating: 990,
+        theme: 'Equalizing',
+        fen: '6kr/3n1p2/7p/pp1Np3/1q2P3/5P2/1P4PP/1QK3NR b - - 1 26',
+        solution: ['Qe1+','Kc2','Qf2+'] 
+    },
+    {
+        id: 'tactic_661',
+        rating: 1050,
+        theme: 'Equalizing',
+        fen: '8/3b3N/1p6/4k3/8/7P/PPr3PK/R1Br4 w - - 0 29',
+        solution: ['Bf4+','Kxf4','Rxd1'] 
+    },
+    {
+        id: 'tactic_662',
+        rating: 850,
+        theme: 'Mate in 1',
+        fen: 'r2q1rk1/5pp1/bp5p/p1nn1N1P/3Q4/2N2P1R/PP4P1/2KR4 w - - 0 21',
+        solution: ['Qxg7#'] 
+    },
+    {
+        id: 'tactic_663',
+        rating: 700,
+        theme: 'Mate in 1',
+        fen: 'r4rk1/p4pp1/b3p3/8/3P3Q/2pB4/3q1PPP/4RK1R w - - 7 25',
+        solution: ['Qh7#'] 
+    },
+    {
+        id: 'tactic_664',
+        rating: 860,
+        theme: 'Mate in 1',
+        fen: '8/pp6/2p2r2/4Rn2/5k1P/8/PPB2KP1/8 w - - 0 36',
+        solution: ['Re4#'] 
+    },
+    {
+        id: 'tactic_665',
+        rating: 890,
+        theme: 'Mate in 1',
+        fen: '5r1k/1b4p1/p6p/4Pp2/2pN1P2/7P/PPQ2n1P/5RK1 b - - 2 30',
+        solution: ['Nxh3#'] 
+    },
+    {
+        id: 'tactic_666',
+        rating: 850,
+        theme: 'Double Attack',
+        fen: '2r1r1k1/3b1pp1/p2P3p/1p6/4n3/1B1Q3P/P5PB/4R2K b - - 0 24',
+        solution: ['Nf2+'] 
+    },
+    {
+        id: 'tactic_667',
+        rating: 910,
+        theme: 'Exposed king',
+        fen: '8/5p1p/1p6/3ppk2/1R6/3PKB2/r7/8 b - - 7 43',
+        solution: ['d4+'] 
+    },
+    {
+        id: 'tactic_668',
+        rating: 850,
+        theme: 'Double Attack',
+        fen: '8/ppp4k/7p/3p4/6P1/5P2/PP1qn3/2N1RQ1K b - - 4 33',
+        solution: ['Ng3+'] 
+    },
+    {
+        id: 'tactic_669',
+        rating: 1100,
+        theme: 'Annihilation of Defense',
+        fen: '3r2k1/4Rppp/pQp1n3/1p6/2pn1Pq1/P1N3P1/1P4BP/7K w - - 0 1',
+        solution: ['Qxd8+'] 
+    },
+    {
+        id: 'tactic_670',
+        rating: 1150,
+        theme: 'Deflection/Decoy',
+        fen: 'r1br3k/pp3Qpp/1q1N4/8/2B2n2/8/PPP3PP/R2K1R2 w - - 0 1',
+        solution: ['Qg8+','Rxg8','Nf7#'] 
+    },
+    {
+        id: 'tactic_671',
+        rating: 1400,
+        theme: 'Endgames',
+        fen: 'R7/4k3/P7/8/8/8/6K1/r7 w - - 0 1',
+        solution: ['a7','Kf7','Rh8'] 
+    },
+    {
+        id: 'tactic_672',
+        rating: 1370,
+        theme: 'Deflection/Decoy',
+        fen: 'r2r2k1/5pb1/2p1P2p/2R1nBpQ/1p2N3/1P5P/PP4q1/1KR5 b - - 0 1',
+        solution: ['Rf7','Qh8','g7'],
+        alternatives:{2:'Rcf1'} 
+    },
+    {
+        id: 'tactic_673',
+        rating: 1160,
+        theme: 'Annihilation of Defense',
+        fen: 'rr3nk1/6q1/2p1pRP1/3pP1Qp/6p1/2P3P1/N6P/K1R5 b - - 0 1',
+        solution: ['Rxa2+','Kxa2','Qa7#'] 
+    },
 
 
 
