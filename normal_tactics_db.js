@@ -6148,13 +6148,288 @@ window.NORMAL_TACTICS = [
         fen: 'R1n3r1/1k1r4/1p2qp2/1p1bpn2/8/1P1NPP2/2Q2K1P/R3B1N1 b - - 0 1',
         solution: ['Rg2+','Kxg2','Nxe3+'] 
     },
+    {
+        id: 'tactic_881',
+        rating: 620,
+        theme: 'Defending',
+        fen: 'r1q2rk1/3b2pp/pnp5/P2p4/1P1Pp3/1QN1P3/3B1PPP/1R3RK1 b - - 0 1',
+        solution: ['Nc4'] 
+    },
+    {
+        id: 'tactic_882',
+        rating: 630,
+        theme: 'Defending',
+        fen: 'r4r1k/pRB2ppp/4pb2/q1p5/b2P4/2PB1Q2/P4PPP/R5K1 b - - 0 1',
+        solution: ['Qxc3'] 
+    },
+    {
+        id: 'tactic_883',
+        rating: 650,
+        theme: 'Defending',
+        fen: 'r1b2rk1/1pq2ppp/1bp2n2/8/3pP3/pP1P1N2/PBQ1BPPP/R1R3K1 w - - 0 1',
+        solution: ['Bxd4'] 
+    },
+    {
+        id: 'tactic_884',
+        rating: 730,
+        theme: 'Defending',
+        fen: '5rk1/p4p1p/Ppb1p1p1/1P6/8/2N1PnPP/B3KP2/1R6 b - - 0 1',
+        solution: ['Ba8'] 
+    },
+    {
+        id: 'tactic_885',
+        rating: 680,
+        theme: 'Defending',
+        fen: '6k1/1b3ppp/1p6/pBrp4/7B/Pn1KPP2/1P4PP/7R w - - 0 1',
+        solution: ['a4'] 
+    },
+    {
+        id: 'tactic_886',
+        rating: 700,
+        theme: 'Defending',
+        fen: '3r4/1p1r1k1p/p5p1/8/3NPp2/2NR1P2/P3K2P/8 w - - 0 1',
+        solution: ['Nd5'] 
+    },
+    {
+        id: 'tactic_887',
+        rating: 710,
+        theme: 'Defending',
+        fen: '6r1/p4k2/1p6/1Pp2p2/2Pbp3/P1R3BP/6P1/5K2 w - - 0 1',
+        solution: ['Rb3'] 
+    },
+    {
+        id: 'tactic_888',
+        rating: 700,
+        theme: 'Defending',
+        fen: '6k1/1p5p/1Nn1p3/5p2/2P1nP2/1P2PKP1/1R1B3P/3r4 w - - 0 1',
+        solution: ['Ke2'] 
+    },
+    {
+        id: 'tactic_889',
+        rating: 720,
+        theme: 'Defending',
+        fen: '4qbk1/1r3r2/p1n1b1p1/2Q2pPp/P1P1p2P/2N1P1B1/2R2PB1/4R1K1 w - - 0 1',
+        solution: ['Bd6'] 
+    },
+    {
+        id: 'tactic_890',
+        rating: 660,
+        theme: 'Defending',
+        fen: '1r3rk1/pp1qbppp/n4n2/8/Np6/1N2P1P1/PPP2PBP/R2Q1RK1 w - - 0 1',
+        solution: ['Qxd7'] 
+    },
+    {
+        id: 'tactic_891',
+        rating: 650,
+        theme: 'Defending',
+        fen: 'r4rk1/1b2bppp/p7/3q4/2pP4/2n1PN2/P2NQPPP/R3BRK1 w - - 0 1',
+        solution: ['Qxc4'] 
+    },
+    {
+        id: 'tactic_892',
+        rating: 600,
+        theme: 'Defending',
+        fen: 'rnbqk1nr/pp3ppp/4p3/2ppP3/3P4/P1b5/1PP2PPP/R1BQKBNR w - - 0 1',
+        solution: ['bxc3'] 
+    },
+    {
+        id: 'tactic_893',
+        rating: 620,
+        theme: 'Defending',
+        fen: '2rq1rk1/1pn3pp/p4p2/4b3/2B1p3/1P2P3/PB1Q1PPP/2RR2K1 b - - 0 1',
+        solution: ['Kh8'] 
+    },
+    {
+        id: 'tactic_894',
+        rating: 600,
+        theme: 'Defending',
+        fen: 'rn1qkb1r/pp2pppp/2p2N2/5b2/3P4/8/PPP1QPPP/R1B1KBNR b - - 0 1',
+        solution: ['gxf6'] 
+    },
+    {
+        id: 'tactic_895',
+        rating: 610,
+        theme: 'Defending',
+        fen: 'r1bqk2r/1p1p1pb1/p1n2Npp/2p3B1/2B1P3/3P1N2/PPP3PP/R2QK2R b - - 0 1',
+        solution: ['Bxf6'] 
+    },
+    {
+        id: 'tactic_896',
+        rating: 640,
+        theme: 'Defending',
+        fen: '4k3/5p2/4pn2/1B2P3/8/8/4KP2/8 b - - 0 1',
+        solution: ['Nd7'] 
+    },
+    {
+        id: 'tactic_897',
+        rating: 620,
+        theme: 'Defending',
+        fen: '1k1rr3/pppq1ppp/1bNpbn2/1B6/4P3/5P2/PPPB2PP/2KRQ1NR b - - 0 1',
+        solution: ['bxc6'] 
+    },
+    {
+        id: 'tactic_898',
+        rating: 790,
+        theme: 'Defending',
+        fen: '3Q2k1/p1p2ppp/8/2b5/6b1/8/PPPPr1PP/R1BK3R b - - 0 1',
+        solution: ['Re8#'] 
+    },
+    {
+        id: 'tactic_899',
+        rating: 680,
+        theme: 'Defending',
+        fen: 'r3q1k1/pppn1pp1/1b1p1N1p/8/2BnP1Q1/8/PP3PPP/3R1RK1 b - - 0 1',
+        solution: ['Nxf6'] 
+    },
+    {
+        id: 'tactic_900',
+        rating: 710,
+        theme: 'Defending',
+        fen: 'r4rk1/1Q3ppp/p2b2b1/1pB1p1q1/8/1B6/PPP2PPP/2KR3R w - - 0 1',
+        solution: ['Be3'] 
+    },
+    {
+        id: 'tactic_901',
+        rating: 640,
+        theme: 'Defending',
+        fen: 'r2qkbnr/ppp3pp/5p2/3p1b2/3P4/2Nn1N2/PPP2PPP/R1BQK2R w - - 0 1',
+        solution: ['cxd3'] 
+    },
+    {
+        id: 'tactic_902',
+        rating: 610,
+        theme: 'Defending',
+        fen: 'r3k2r/pp2np1p/4q1p1/2pp4/3b1P2/2NP1B2/PPP3PP/R2Q1RK1 w - - 0 1',
+        solution: ['Kh1'] 
+    },
+    {
+        id: 'tactic_903',
+        rating: 730,
+        theme: 'Defending',
+        fen: '5k2/1p6/2bP1Q2/8/5P2/5q2/5P2/6K1 b - - 0 1',
+        solution: ['Kg8'] 
+    },
+    {
+        id: 'tactic_904',
+        rating: 670,
+        theme: 'Defending',
+        fen: 'r1bq1rk1/ppp2pbp/3p1np1/4p3/2B1P3/P1NPBn1P/1PP2PP1/R2Q1RK1 w - - 0 1',
+        solution: ['Qxf3'] 
+    },
+    {
+        id: 'tactic_905',
+        rating: 640,
+        theme: 'Defending',
+        fen: 'r1b3nr/pp2kp1p/3R1Pp1/2p5/2B5/7P/PPP2PP1/RN4K1 b - - 0 1',
+        solution: ['Kxd6'] 
+    },
+    {
+        id: 'tactic_906',
+        rating: 710,
+        theme: 'Defending',
+        fen: '8/7k/5Q1P/6p1/3p4/2n5/4r3/1K6 w - - 0 1',
+        solution: ['Kc1'] 
+    },
+    {
+        id: 'tactic_907',
+        rating: 730,
+        theme: 'Defending',
+        fen: '8/5pkp/3R1Bp1/1p6/2b5/6PP/p4PK1/2r5 b - - 0 1',
+        solution: ['Kh6'] 
+    },
+    {
+        id: 'tactic_908',
+        rating: 700,
+        theme: 'Defending',
+        fen: 'r2qkb1r/1p3ppp/3p1N2/2p1p3/3nP3/1PNP1P2/2P3PP/R2QK2R b - - 0 1',
+        solution: ['gxf6'] 
+    },
+    {
+        id: 'tactic_909',
+        rating: 650,
+        theme: 'Mate in 1',
+        fen: '4kr2/2Q5/5P2/1q6/8/8/6PK/8 w - - 0 1',
+        solution: ['Qe7#'] 
+    },
+    {
+        id: 'tactic_910',
+        rating: 670,
+        theme: 'Mate in 1',
+        fen: '4kb2/2Q5/5P2/1q6/8/8/6PK/8 w - - 0 1',
+        solution: ['f7#'] 
+    },
+    {
+        id: 'tactic_911',
+        rating: 680,
+        theme: 'Mate in 1',
+        fen: '4k3/2Q2r2/5P2/1q6/8/8/6PK/8 w - - 0 1',
+        solution: ['Qc8#'] 
+    },
+    {
+        id: 'tactic_912',
+        rating: 650,
+        theme: 'Mate in 1',
+        fen: '8/1K6/7b/k4p2/p1P5/4q3/1Q6/8 w - - 0 1',
+        solution: ['Qb5#'] 
+    },
+    {
+        id: 'tactic_913',
+        rating: 650,
+        theme: 'Mate in 1',
+        fen: '8/1K1bq3/8/k4p2/p1P5/8/1Q6/8 w - - 0 1',
+        solution: ['Qb6#'] 
+    },
+    {
+        id: 'tactic_914',
+        rating: 690,
+        theme: 'Mate in 1',
+        fen: '8/1K1b4/4q2b/k4p2/p1P5/8/1Q6/8 w - - 0 1',
+        solution: ['Qc3#'] 
+    },
+    {
+        id: 'tactic_915',
+        rating: 660,
+        theme: 'Mate in 1',
+        fen: '4R2Q/2q2k2/5p2/1p2b3/1P6/P6P/2r3P1/7K w - - 0 1',
+        solution: ['Qg8#'] 
+    },
+    {
+        id: 'tactic_916',
+        rating: 700,
+        theme: 'Mate in 1',
+        fen: '4R2Q/2q2kb1/5p2/1p6/1P6/P6P/2r3P1/7K w - - 0 1',
+        solution: ['Qh5#'] 
+    },
+    {
+        id: 'tactic_917',
+        rating: 660,
+        theme: 'Mate in 1',
+        fen: '3R3Q/2q2kb1/5p2/1p6/1P6/P6P/2r3P1/7K w - - 0 1',
+        solution: ['Qe8#'] 
+    },
+    {
+        id: 'tactic_918',
+        rating: 630,
+        theme: 'Mate in 1',
+        fen: '5bk1/p5p1/1p4B1/2q5/5P1Q/1P6/P5PK/2r5 w - - 0 1',
+        solution: ['Qh7#'] 
+    },
+    {
+        id: 'tactic_919',
+        rating: 720,
+        theme: 'Mate in 1',
+        fen: '5nk1/p5p1/1p4B1/2q1N3/5P1Q/1P6/P5PK/2r5 w - - 0 1',
+        solution: ['Bf7#'] 
+    },
+    {
+        id: 'tactic_920',
+        rating: 660,
+        theme: 'Mate in 1',
+        fen: '6k1/p5p1/3pb1B1/2q5/5P1Q/1P6/P5PK/2r5 w - - 0 1',
+        solution: ['Qd8#'] 
+    },
 
-
-
-
-
-
-
+ 
 
 
     // {
